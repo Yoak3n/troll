@@ -11,7 +11,10 @@
 ## Usage
 
 ### Install
-
+```bash
+go install github.com/Yoak3n/troll/troll@latest
+```
+安装cli工具成功后，帮助信息如下
 ```bash
 troll -h
 
