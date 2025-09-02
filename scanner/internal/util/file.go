@@ -9,8 +9,7 @@ var charReplacements = map[string]string{
 	":":  "：",
 	"<":  "＜",
 	">":  "＞",
-	"“":  "\"",
-	"”":  "\"",
+	"\"": "＂",
 	"|":  "｜",
 	"?":  "？",
 	"*":  "＊",
@@ -18,7 +17,7 @@ var charReplacements = map[string]string{
 	"/":  "／",
 }
 
-func SanitizeFileName(fn string) string {
+func SanitizeFilename(fn string) string {
 	for k, v := range charReplacements {
 		fn = strings.Replace(fn, k, v, -1)
 	}

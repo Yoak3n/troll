@@ -22,7 +22,7 @@ func NewVideoDataFromResponse(item model.SearchItem) *model.VideoData {
 	comments := LazilyGetAllComments(item.Aid)
 	return &model.VideoData{
 		Avid:        item.Id,
-		Title:       util.SanitizeFileName(item.Title),
+		Title:       util.SanitizeFilename(item.Title),
 		Bvid:        item.Bvid,
 		Description: item.Description,
 		Owner: model.UserData{
