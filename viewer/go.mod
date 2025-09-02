@@ -1,1 +1,1 @@
-module github.com/Yoak3n/troll-viewer
+module github.com/Yoak3n/troll/viewer

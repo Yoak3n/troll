@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Yoak3n/gulu/logger"
-	"github.com/Yoak3n/troll-scanner/internal/config"
+	"github.com/Yoak3n/troll/scanner/internal/config"
 )
 
 func ClientWithProxy() *http.Client {

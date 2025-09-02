@@ -9,9 +9,9 @@ import (
 
 	"github.com/Yoak3n/gulu/logger"
 	util2 "github.com/Yoak3n/gulu/util"
-	"github.com/Yoak3n/troll-scanner/internal/util"
-	"github.com/Yoak3n/troll-scanner/model"
-	"github.com/Yoak3n/troll-scanner/model/dto"
+	"github.com/Yoak3n/troll/scanner/internal/util"
+	"github.com/Yoak3n/troll/scanner/model"
+	"github.com/Yoak3n/troll/scanner/model/dto"
 )
 
 type Video struct {

@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/Yoak3n/troll-scanner/model"
+	"github.com/Yoak3n/troll/scanner/model"
 )
 
 type VideoDataOutput struct {

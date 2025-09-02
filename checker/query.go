@@ -10,8 +10,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Yoak3n/troll-scanner/model"
-	"github.com/Yoak3n/troll-scanner/model/dto"
+	"github.com/Yoak3n/troll/scanner/model"
+	"github.com/Yoak3n/troll/scanner/model/dto"
 	"github.com/urfave/cli/v3"
 )
 

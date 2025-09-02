@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Yoak3n/gulu/logger"
-	"github.com/Yoak3n/troll-scanner/internal/util"
-	"github.com/Yoak3n/troll-scanner/model"
+	"github.com/Yoak3n/troll/scanner/internal/util"
+	"github.com/Yoak3n/troll/scanner/model"
 )
 
 const QueryUrl = "https://api.bilibili.com/x/v2/reply"

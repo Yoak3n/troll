@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/Yoak3n/troll-scanner/package/handler"
+	"github.com/Yoak3n/troll/scanner/package/handler"
 	"github.com/urfave/cli/v3"
 )
 

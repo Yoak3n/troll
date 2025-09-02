@@ -1,4 +1,4 @@
-module github.com/Yoak3n/troll-scanner
+module github.com/Yoak3n/troll/scanner
 
 go 1.25
 
