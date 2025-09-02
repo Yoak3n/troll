@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 
 	"github.com/urfave/cli/v3"
 )
 
 var cache string
+var title string
 
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
@@ -19,7 +21,7 @@ func main() {
 	}
 	cmd := &cli.Command{
 		Name:    "troll",
-		Version: "0.0.1",
+		Version: "0.1.0",
 		Usage:   "search trolls from bilibili",
 		Commands: []*cli.Command{
 			fetchCommand(),
@@ -31,19 +33,24 @@ func main() {
 				Value:       "data/cache",
 				Aliases:     []string{"C"},
 				Usage:       "cache path",
-				Category:    "Optional",
 				Destination: &cache,
+			},
+			&cli.StringFlag{
+				Name:        "title",
+				Value:       "",
+				Usage:       "specify title as directory",
+				Aliases:     []string{"T"},
+				Destination: &title,
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			fmt.Println("Welcome to trolls-checker")
+			fmt.Println("Welcome to trolls-checker!!!")
+			fmt.Println("Please use subcommands fetch and query")
 			return nil
 		},
 	}
-
+	sort.Sort(cli.FlagsByName(cmd.Flags))
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
-	//handler.NewHandler("机圈", "华为")
-	//fmt.Println("Hello Checker")
 }

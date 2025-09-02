@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/Yoak3n/troll-scanner/model"
 	"github.com/Yoak3n/troll-scanner/model/dto"
@@ -15,8 +16,8 @@ import (
 )
 
 type queryArgs struct {
-	title string
 	top   string
+	count int
 	user  string
 }
 
@@ -46,29 +47,33 @@ func queryCommand() *cli.Command {
 			queryEntry(q)
 			return nil
 		},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "title",
-				Value:       "",
-				Aliases:     []string{"T"},
-				Usage:       "specify title to a directory",
-				Required:    true,
-				Destination: &q.title,
-			},
-			&cli.StringFlag{
-				Name:        "top",
-				Value:       "",
-				Category:    "Optional",
-				Usage:       "show top users of comments",
-				Destination: &q.top,
-			},
-			&cli.StringFlag{
-				Name:        "user",
-				Value:       "",
-				Category:    "Optional",
-				Aliases:     []string{"U"},
-				Usage:       "show the comments of a user",
-				Destination: &q.user,
+		Flags: []cli.Flag{},
+		MutuallyExclusiveFlags: []cli.MutuallyExclusiveFlags{
+			{
+				Required: true,
+				Flags: [][]cli.Flag{
+					{
+						&cli.StringFlag{
+							Name:        "top",
+							Value:       "",
+							Usage:       "show top users or comments",
+							Destination: &q.top,
+						},
+						&cli.IntFlag{
+							Name:        "count",
+							Value:       10,
+							Usage:       "limit the count of top users or comments ",
+							Destination: &q.count,
+						},
+					}, {
+						&cli.StringFlag{
+							Name:        "user",
+							Value:       "",
+							Usage:       "show the comments of a user",
+							Destination: &q.user,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -94,12 +99,13 @@ func queryEntry(q *queryArgs) {
 		return
 	}
 
-	if !slices.Contains(existDirs, q.title) {
+	if !slices.Contains(existDirs, title) {
 		fmt.Println("Your cache must have targeted title")
+		fmt.Printf("Existing titles are : %s\n", strings.Join(existDirs, ","))
 		return
 	}
 
-	videos, err := os.ReadDir(filepath.Join(cache, q.title))
+	videos, err := os.ReadDir(filepath.Join(cache, title))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -112,7 +118,7 @@ func queryEntry(q *queryArgs) {
 			continue
 		}
 
-		buf, err := os.ReadFile(filepath.Join(cache, q.title, video.Name()))
+		buf, err := os.ReadFile(filepath.Join(cache, title, video.Name()))
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -120,20 +126,20 @@ func queryEntry(q *queryArgs) {
 		data := &dto.VideoDataOutput{}
 		err = json.Unmarshal(buf, data)
 		if err != nil {
-			fmt.Println(err)
+			panic(err)
 			return
 		}
 		store = append(store, *data)
 	}
 	if q.top != "" {
-		top(store, q.top)
+		top(store, q.top, q.count)
 	}
 	if q.user != "" {
 		getUserComment(store, q.user)
 	}
 }
 
-func top(data []dto.VideoDataOutput, flag string) {
+func top(data []dto.VideoDataOutput, flag string, count int) {
 	if flag == topUser {
 		userMap := make(map[string]int)
 		for _, d := range data {
@@ -154,7 +160,7 @@ func top(data []dto.VideoDataOutput, flag string) {
 				}
 			}
 		}
-		u := getTopN(userMap, 5)
+		u := getTopN(userMap, count)
 		for _, v := range u {
 			fmt.Println(v.Value, v.Key)
 		}
@@ -178,7 +184,7 @@ func top(data []dto.VideoDataOutput, flag string) {
 				}
 			}
 		}
-		c := getTopN(commentMap, 20)
+		c := getTopN(commentMap, count)
 		for _, v := range c {
 			fmt.Println(v.Value, v.Key)
 		}

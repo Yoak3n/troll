@@ -62,14 +62,14 @@ func RequestGetWithAll(addr string) []byte {
 	logger.Logger.Debugln(uri)
 	res, err := client.Do(req)
 	if err != nil {
-		logger.Logger.Errorf("Request GetWithAll Error And Tring: %s", err.Error())
+		logger.Logger.Errorf("Request GetWithAll Error And Retrying: %s", err.Error())
 		return requestRetry(req, 1)
 	}
 	if res.StatusCode != 200 {
 		if res.StatusCode == 412 {
 			logger.Logger.Errorf("目前已被风控")
-			return requestRetry(req, 1)
 		}
+		return requestRetry(req, 1)
 	}
 
 	defer res.Body.Close()

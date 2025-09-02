@@ -13,20 +13,32 @@ func init() {
 }
 
 type Handler struct {
-	Title string
-	Topic string
+	title string
+	topic string
 	cache string
+	bvid  string
+	avid  int64
 }
 
-func NewHandler(cache string, title string, topic string) *Handler {
+func NewHandler(cache string, title string, topic string, bvid string, avid int64) *Handler {
 	hub := &Handler{
-		Title: title,
-		Topic: topic,
+		title: title,
+		topic: topic,
 		cache: cache,
+		bvid:  bvid,
+		avid:  avid,
 	}
 	return hub
 }
 
 func (h *Handler) Run() {
-	NewTopic(h.cache, h.Title, strings.Split(h.Topic, ","))
+	if h.topic != "" {
+		NewTopic(h.cache, h.title, strings.Split(h.topic, ","))
+		return
+	}
+	if h.bvid != "" || h.avid != -1 {
+		NewVideo(h.cache, h.title, h.bvid, h.avid)
+		return
+	}
+
 }

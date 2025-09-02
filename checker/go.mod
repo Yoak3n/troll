@@ -1,4 +1,4 @@
-module github.com/Yoak3n/troll-checker
+module github.com/Yoak3n/troll
 
 go 1.25.0
 
