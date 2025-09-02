@@ -47,7 +47,7 @@ title即存放一批视频评论信息数据的目录，在cache目录下，在�
 
 
 ### Prepare
-首先参考`config.example.yaml`文件，准备一个`config.yaml`文件放在当前目录
+首先参考`config.example.yaml`文件，准备一个`config.yaml`文件放在当前目录（使用cli工具时所在目录必须要有该文件）
 
 获取bilibili的cookie填写好cookie字段（必填）， 如果要使用代理可以填好系统代理的地址
 
