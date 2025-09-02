@@ -8,7 +8,6 @@ import (
 )
 
 type fetchArgs struct {
-	title string
 	topic string
 	AVId  int64
 	BVId  string
@@ -65,9 +64,9 @@ func fetchCommand() *cli.Command {
 }
 
 func fetchEntry(cache string, f *fetchArgs) {
-	if f.title == "" {
-		f.title = f.topic
+	if title == "" {
+		title = f.topic
 	}
-	h := handler.NewHandler(cache, f.title, f.topic, f.BVId, f.AVId)
+	h := handler.NewHandler(cache, title, f.topic, f.BVId, f.AVId)
 	h.Run()
 }
