@@ -1,7 +1,11 @@
 go 1.25.0
 
 use (
-	./checker
+	./troll
 	./scanner
 	./viewer
+)
+
+replace (
+	
 )

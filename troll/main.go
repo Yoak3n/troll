@@ -44,7 +44,7 @@ func main() {
 			},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			fmt.Println("Welcome to trolls-checker!!!")
+			fmt.Println("Welcome to trolls-troll!!!")
 			fmt.Println("Please use subcommands fetch and query")
 			return nil
 		},
