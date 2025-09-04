@@ -91,15 +91,16 @@ USAGE:
    troll query [options]
 
 OPTIONS:
-   --help, -h     show help
-   --top string   show top users or comments
-   --count int    limit the cout of top users or comments  (default: 10)
-   --user string  show the comments of a user
+   --help, -h               show help
+   --top string, -t string  show top users or comments
+   --count int              limit the count of top users or comments or words  (default: 10)
+   --user string            show the comments of a user
 
 GLOBAL OPTIONS:
    --cache string, -C string  cache path (default: "data/cache")
    --title string, -T string  specify title as directory
    --version, -V              print only the version (default: false)
 ```
-`top`与`count`两个参数来获取出现次数最多的user或comment，
+`top`与`count`两个参数来获取出现次数最多的user或comment或word，`--top word`需要通过tfidf算法计算有价值的词条，性能开销较大，目前版本慎用
 `user`获取指定用户名的所有评论
+
