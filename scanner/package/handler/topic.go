@@ -13,6 +13,7 @@ import (
 	"github.com/Yoak3n/troll/scanner/internal/util"
 	"github.com/Yoak3n/troll/scanner/model"
 	"github.com/Yoak3n/troll/scanner/model/dto"
+	util3 "github.com/Yoak3n/troll/scanner/package/util"
 )
 
 const SearchUrl = "https://api.bilibili.com/x/web-interface/wbi/search/type"
@@ -49,7 +50,7 @@ func (t *Topic) fetchVideos() {
 		"page":        "1",
 		"order":       "totalrank",
 	}
-	addr := util.AppendParamsToUrl(SearchUrl, params)
+	addr := util3.AppendParamsToUrl(SearchUrl, params)
 	resBuf := util.RequestGetWithAll(addr)
 	videos := make([]model.VideoData, 0)
 	response := &model.SearchResponse{}

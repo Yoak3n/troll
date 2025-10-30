@@ -1,7 +1,9 @@
 package config
 
 import (
-	"github.com/spf13/viper"
+	"errors"
+
+	"github.com/Yoak3n/troll/scanner/controller"
 )
 
 type Configuration struct {
@@ -15,21 +17,16 @@ type Auth struct {
 	Cookie string
 }
 
-func Init() *Configuration {
+func Init(dbPath string, dbName string) *Configuration {
 	config := &Configuration{
 		Auth: Auth{},
 	}
-
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-
-	err := viper.ReadInConfig()
+	dbConf, err := controller.GlobalDatabase(dbPath, dbName).QueryConfiguration()
 	if err != nil {
-		panic(err)
+		panic(errors.New("failed to query configuration, please set config first"))
 	}
-	config.Auth.Cookie = viper.GetString("auth.cookie")
-	config.Proxy = viper.GetString("proxy")
+	config.Auth.Cookie = dbConf.Cookie
+	config.Proxy = dbConf.Proxy
 
 	Config = config
 	return config

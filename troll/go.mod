@@ -3,13 +3,13 @@ module github.com/Yoak3n/troll/troll
 go 1.25.0
 
 require (
+	github.com/Yoak3n/gulu v0.0.6
 	github.com/Yoak3n/troll/scanner v0.0.0-20250902235721-8c2fed400410
 	github.com/go-ego/gse v0.80.3
 	github.com/urfave/cli/v3 v3.4.1
 )
 
 require (
-	github.com/Yoak3n/gulu v0.0.6 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect

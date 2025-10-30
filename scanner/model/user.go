@@ -5,3 +5,8 @@ type UserData struct {
 	Name     string `json:"name"`
 	Location string `json:"location"`
 }
+
+type UserQuery struct {
+	UserTable
+	Count int
+}

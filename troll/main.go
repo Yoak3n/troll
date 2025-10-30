@@ -5,13 +5,22 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"sort"
 
+	"github.com/Yoak3n/gulu/util"
 	"github.com/urfave/cli/v3"
 )
 
 var cache string
 var title string
+var TrollPath = "troll"
+
+func init() {
+	userConfigPath, _ := os.UserConfigDir()
+	TrollPath = path.Join(userConfigPath, "troll")
+	_ = util.CreateDirNotExists(TrollPath)
+}
 
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
@@ -26,11 +35,12 @@ func main() {
 		Commands: []*cli.Command{
 			fetchCommand(),
 			queryCommand(),
+			configCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "cache",
-				Value:       "data/cache",
+				Value:       path.Join(TrollPath, "data/cache"),
 				Aliases:     []string{"C"},
 				Usage:       "cache path",
 				Destination: &cache,

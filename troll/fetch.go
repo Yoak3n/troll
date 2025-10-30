@@ -67,6 +67,7 @@ func fetchEntry(cache string, f *fetchArgs) {
 	if title == "" {
 		title = f.topic
 	}
+	handler.Init(TrollPath, "troll")
 	h := handler.NewHandler(cache, title, f.topic, f.BVId, f.AVId)
 	h.Run()
 }

@@ -7,9 +7,9 @@ import (
 	"github.com/Yoak3n/troll/scanner/internal/config"
 )
 
-func init() {
+func Init(dir string, name string) {
 	logger.Init()
-	config.Init()
+	config.Init(dir, name)
 }
 
 type Handler struct {

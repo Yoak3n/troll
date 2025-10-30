@@ -70,7 +70,8 @@ type CommentPicture struct {
 	Size   float64 `json:"img_size"`
 }
 type CommentMember struct {
-	Uname string `json:"uname"`
+	Uname  string `json:"uname"`
+	Avatar string `json:"avatar"`
 }
 
 type SubCommentResponse struct {

@@ -10,8 +10,10 @@ import (
 	"time"
 
 	"github.com/Yoak3n/gulu/logger"
+	"github.com/Yoak3n/troll/scanner/controller"
 	"github.com/Yoak3n/troll/scanner/internal/util"
 	"github.com/Yoak3n/troll/scanner/model"
+	util2 "github.com/Yoak3n/troll/scanner/package/util"
 )
 
 const QueryUrl = "https://api.bilibili.com/x/v2/reply"
@@ -20,7 +22,7 @@ const LazilyLoadUrl = "https://api.bilibili.com/x/v2/reply/wbi/main"
 
 func NewVideoDataFromResponse(item model.SearchItem) *model.VideoData {
 	comments := LazilyGetAllComments(item.Aid)
-	return &model.VideoData{
+	videoData := &model.VideoData{
 		Avid:        item.Id,
 		Title:       util.SanitizeFilename(item.Title),
 		Bvid:        item.Bvid,
@@ -31,6 +33,7 @@ func NewVideoDataFromResponse(item model.SearchItem) *model.VideoData {
 		},
 		Comments: comments,
 	}
+	return videoData
 }
 
 // GetAllComments risky way to crawl
@@ -61,7 +64,7 @@ func GetAllComments(avid uint) []model.CommentData {
 }
 
 func getComments(params map[string]string) ([]model.CommentData, error) {
-	addr := util.AppendParamsToUrl(QueryUrl, params)
+	addr := util2.AppendParamsToUrl(QueryUrl, params)
 	resBuf := util.RequestGetWithAll(addr)
 	if resBuf == nil {
 		return nil, errors.New("query response returned empty string")
@@ -75,7 +78,7 @@ func getComments(params map[string]string) ([]model.CommentData, error) {
 		return nil, errors.New(fmt.Sprintf("Response err: %s", response.Message))
 	}
 
-	comments := extractComments(response.Data.Replies, false)
+	comments := extractComments(response.Data.Replies, 0)
 	for i, v := range comments {
 		if v.NeedExpand && len(v.Children) > 0 {
 			logger.Logger.Printf("getCommentSubTree %v", v)
@@ -86,15 +89,23 @@ func getComments(params map[string]string) ([]model.CommentData, error) {
 
 }
 
-func extractComments(items []model.CommentItem, sub bool) []model.CommentData {
+func extractComments(items []model.CommentItem, parent uint) []model.CommentData {
 	comments := make([]model.CommentData, 0)
+	commentsRecords := make([]model.CommentTable, 0)
+	authorsRecords := make([]model.UserTable, 0)
 	for _, v := range items {
 		author := model.UserData{
 			Uid:      v.Mid,
 			Name:     v.Member.Uname,
 			Location: v.ReplyControl.Location,
 		}
-
+		authorRecord := model.UserTable{
+			Username: author.Name,
+			Uid:      author.Uid,
+			Avatar:   v.Member.Avatar,
+			Location: author.Location,
+		}
+		authorsRecords = append(authorsRecords, authorRecord)
 		comment := model.CommentData{
 			Text:   v.Content.Message,
 			Author: author,
@@ -102,12 +113,35 @@ func extractComments(items []model.CommentItem, sub bool) []model.CommentData {
 			Oid:    v.Oid,
 			Like:   v.Like,
 		}
-		if !sub {
-			comment.Children = extractComments(v.Replies, true)
-			comment.NeedExpand = v.ReplyControl.SubReplyEntryText != ""
+		commentRecord := model.CommentTable{
+			Text:      comment.Text,
+			Owner:     comment.Author.Uid,
+			VideoAvid: comment.Oid,
+			CommentId: comment.Rpid,
 		}
+		// if the comment without parent, then it's a top level comment
+		if parent == 0 {
+			comment.Children = extractComments(v.Replies, v.Rpid)
+			comment.NeedExpand = v.ReplyControl.SubReplyEntryText != ""
+		} else {
+			commentRecord.ParentComment = parent
+		}
+		commentsRecords = append(commentsRecords, commentRecord)
 		comments = append(comments, comment)
 	}
+	go func() {
+		err := controller.GlobalDatabase().AddUserRecord(authorsRecords)
+		if err != nil {
+			logger.Logger.Errorf("AddUserRecord err: %v", err)
+		}
+	}()
+	go func() {
+		err := controller.GlobalDatabase().AddCommentRecord(commentsRecords)
+		if err != nil {
+			logger.Logger.Errorf("AddCommentRecord err: %v", err)
+		}
+	}()
+
 	return comments
 }
 
@@ -119,7 +153,7 @@ func getCommentSubTree(comment *model.CommentData) *model.CommentData {
 		if times >= 5 {
 			break
 		}
-		time.Sleep(time.Second * time.Duration(rand.Intn(2)+2))
+		time.Sleep(time.Second * time.Duration(rand.Intn(3)+1))
 		params := map[string]string{
 			"type": "1",
 			"oid":  strconv.FormatUint(uint64(comment.Oid), 10),
@@ -127,7 +161,7 @@ func getCommentSubTree(comment *model.CommentData) *model.CommentData {
 			"ps":   "20",
 			"pn":   strconv.Itoa(page),
 		}
-		uri := util.AppendParamsToUrl(SubReplyUrl, params)
+		uri := util2.AppendParamsToUrl(SubReplyUrl, params)
 		resBuf := util.RequestGetWithAll(uri)
 		if resBuf == nil {
 			logger.Logger.Errorf("getCommentSubTree err: %v", errors.New("get sub comment response returned empty string"))
@@ -151,7 +185,7 @@ func getCommentSubTree(comment *model.CommentData) *model.CommentData {
 			logger.Logger.Printf("getCommentSubTree %d completed", comment.Rpid)
 			break
 		}
-		replies := extractComments(response.Data.Replies, true)
+		replies := extractComments(response.Data.Replies, comment.Rpid)
 		subComments = append(subComments, replies...)
 		page += 1
 		time.Sleep(time.Second * time.Duration(rand.Intn(3)+1))
@@ -177,7 +211,7 @@ func LazilyGetAllComments(avid uint) []model.CommentData {
 		if offset != "" {
 			params["pagination_str"] = url.QueryEscape(fmt.Sprintf(fmt.Sprintf(`{"offset":"%s"}`, offset)))
 		}
-		uri := util.AppendParamsToUrl(LazilyLoadUrl, params)
+		uri := util2.AppendParamsToUrl(LazilyLoadUrl, params)
 		resBuf := util.RequestGetWithAll(uri)
 		response := &model.LazyCommentResponse{}
 		err := json.Unmarshal(resBuf, response)
@@ -193,7 +227,7 @@ func LazilyGetAllComments(avid uint) []model.CommentData {
 			logger.Logger.Warnln("LazilyGetAllComments replies is empty", response.Message)
 			break
 		}
-		currentComments := extractComments(response.Data.Replies, false)
+		currentComments := extractComments(response.Data.Replies, 0)
 		for i, v := range currentComments {
 			if v.NeedExpand && len(v.Children) > 0 {
 				currentComments[i] = *getCommentSubTree(&v)
