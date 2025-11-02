@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/Yoak3n/troll/scanner/database"
@@ -23,10 +24,9 @@ func NewDatabase(dir string, name string) *Database {
 
 func GlobalDatabase(args ...string) *Database {
 	once.Do(func() {
+		fmt.Println("Database inited")
 		if len(args) == 2 {
 			DB = NewDatabase(args[0], args[1])
-		} else {
-			panic("database init args length is not 2")
 		}
 	})
 	return DB
@@ -112,7 +112,7 @@ func (d *Database) QueryUserCommentsListInTopic(topic string, username string) (
 
 func (d *Database) QuerySimilarComments(topic string, n int) ([]model.SimilarCommentResult, error) {
 	comments := make([]model.SimilarCommentResult, 0)
-	
+
 	// 使用 Where 和 Joins 方法构建查询，而不是直接使用 Raw SQL
 	subQuery := d.db.Table("comment_tables AS c").
 		Select("SUBSTR(c.text, 1, 30) AS content_prefix, COUNT(*) AS similar_count, GROUP_CONCAT(c.comment_id, ', ') AS comment_ids").
@@ -120,11 +120,11 @@ func (d *Database) QuerySimilarComments(topic string, n int) ([]model.SimilarCom
 		Where("c.text IS NOT NULL AND LENGTH(c.text) >= 10 AND v.topic = ?", topic).
 		Group("content_prefix").
 		Having("COUNT(*) > 1")
-	
+
 	query := d.db.Table("(?) AS similar_groups", subQuery).
 		Order("similar_count DESC, content_prefix").
 		Limit(n)
-	
+
 	err := query.Scan(&comments).Error
 	if err != nil {
 		return nil, err

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Yoak3n/gulu/logger"
 	util2 "github.com/Yoak3n/gulu/util"
+	"github.com/Yoak3n/troll/scanner/controller"
 	"github.com/Yoak3n/troll/scanner/internal/util"
 	"github.com/Yoak3n/troll/scanner/model"
 	"github.com/Yoak3n/troll/scanner/model/dto"
@@ -109,6 +110,19 @@ func (t *Topic) worker(id int, jobs <-chan model.SearchItem, wg *sync.WaitGroup)
 		value.Title = util.ExtractContentWithinTag(value.Title)
 		logger.Logger.Printf("====Woker %d Fetch video:《%s》 begining====", id, value.Title)
 		v := NewVideoDataFromResponse(value)
+
+		videoRecord := model.VideoTable{
+			Avid:        v.Avid,
+			Title:       v.Title,
+			Bvid:        v.Bvid,
+			Description: v.Description,
+			Owner:       v.Owner.Uid,
+			Topic:       t.Name,
+		}
+		err := controller.GlobalDatabase().AddVideoRecord(videoRecord)
+		if err != nil {
+			logger.Logger.Errorf("AddVideoRecord err: %v", err)
+		}
 		out := &dto.VideoDataOutput{
 			VideoID:   v.Bvid,
 			Count:     countComments(v),
