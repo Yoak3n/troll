@@ -31,5 +31,6 @@ func setupRoutes(app *fiber.App) {
 
 func setupTopicsRoutes(group fiber.Router) {
 	topics := group.Group("/topics")
-	topics.Get("/", handler.HandlerTopicsGet).Name("get")
+	topics.Get("/list", handler.HandlerTopicsGet).Name("list")
+	topics.Get("/:topicName", handler.HandlerTopicVideosGet).Name("videos")
 }

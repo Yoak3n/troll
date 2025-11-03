@@ -30,7 +30,7 @@ func main() {
 	}
 	cmd := &cli.Command{
 		Name:    "troll",
-		Version: "0.2.2",
+		Version: "0.2.3",
 		Usage:   "search trolls from bilibili",
 		Commands: []*cli.Command{
 			fetchCommand(),

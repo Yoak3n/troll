@@ -66,12 +66,11 @@ func (t *Topic) fetchVideos() {
 	}
 	for i := 1; i <= 2; i++ {
 		t.wg.Add(1)
-		go t.worker(i, t.jobs, &t.wg)
+		go t.worker(i, t.jobs)
 	}
 	// Begin
 
 	for _, value := range response.Data.Result {
-		logger.Logger.Printf("====Fetch video:《%s》 begining====", value.Title)
 		t.jobs <- value
 		//v := NewVideoDataFromResponse(value)
 		//out := &dto.VideoDataOutput{
@@ -104,9 +103,13 @@ func (t *Topic) fetchVideos() {
 	t.Videos = videos
 }
 
-func (t *Topic) worker(id int, jobs <-chan model.SearchItem, wg *sync.WaitGroup) {
-	defer wg.Done()
-	for value := range jobs {
+func (t *Topic) worker(id int, jobs <-chan model.SearchItem) {
+	defer t.wg.Done()
+	for {
+		value, ok := <-jobs
+		if !ok {
+			break
+		}
 		value.Title = util.ExtractContentWithinTag(value.Title)
 		logger.Logger.Printf("====Woker %d Fetch video:《%s》 begining====", id, value.Title)
 		v := NewVideoDataFromResponse(value)
@@ -115,6 +118,7 @@ func (t *Topic) worker(id int, jobs <-chan model.SearchItem, wg *sync.WaitGroup)
 			Avid:        v.Avid,
 			Title:       v.Title,
 			Bvid:        v.Bvid,
+			Cover:       v.Cover,
 			Description: v.Description,
 			Owner:       v.Owner.Uid,
 			Topic:       t.Name,
@@ -123,6 +127,7 @@ func (t *Topic) worker(id int, jobs <-chan model.SearchItem, wg *sync.WaitGroup)
 		if err != nil {
 			logger.Logger.Errorf("AddVideoRecord err: %v", err)
 		}
+		AddUserByUid(v.Owner.Uid)
 		out := &dto.VideoDataOutput{
 			VideoID:   v.Bvid,
 			Count:     countComments(v),
@@ -134,7 +139,7 @@ func (t *Topic) worker(id int, jobs <-chan model.SearchItem, wg *sync.WaitGroup)
 		}
 		err = util2.CreateDirNotExists(fmt.Sprintf("%s/%s", t.cache, t.Name))
 		if err != nil {
-			return
+			continue
 		}
 		file, err := os.Create(fmt.Sprintf("%s/%s/%s.json", t.cache, t.Name, v.Title))
 		if err != nil {

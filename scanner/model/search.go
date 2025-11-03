@@ -12,6 +12,7 @@ type SearchItem struct {
 	Typ         string `json:"type"`
 	Id          uint   `json:"id"`
 	Author      string `json:"author"`
+	Pic         string `json:"pic"`
 	Mid         uint   `json:"mid"`
 	Title       string `json:"title"`
 	Aid         uint   `json:"aid"`

@@ -86,6 +86,7 @@ func (v *Video) Run() {
 	if err != nil {
 		logger.Logger.Errorf("AddVideoRecord err: %v", err)
 	}
+	AddUserByUid(videoData.Owner.Uid)
 	out := &dto.VideoDataOutput{
 		VideoID:   v.Bvid,
 		Count:     countComments(videoData),
@@ -130,6 +131,7 @@ func fetchVideoInfo(v *Video) *model.SearchItem {
 		Title:  util.ExtractContentWithinTag(response.Data.Title),
 		Id:     response.Data.Aid,
 		Author: response.Data.Owner.Name,
+		Pic:    response.Data.Pic,
 		Mid:    response.Data.Owner.Mid,
 		Aid:    response.Data.Aid,
 		Bvid:   response.Data.Bvid,

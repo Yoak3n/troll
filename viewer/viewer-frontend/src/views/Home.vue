@@ -5,7 +5,12 @@ import { NBreadcrumb, NBreadcrumbItem } from "naive-ui"
 
 const $route = useRoute();
 const pathStr = computed(() => {
-    return $route.fullPath.split("/").filter(i => i);
+    const hasQuery = $route.fullPath.includes("?");
+    if (hasQuery){
+        return $route.fullPath.split("?")[0]!.split("/").filter(i => decodeURI(i))
+    }else{
+        return $route.fullPath.split("/").filter(i => decodeURI(i));
+    }
 });
 onMounted(() => {
     console.log('Current path segments:', pathStr.value);
@@ -16,12 +21,14 @@ onMounted(() => {
 
 <template>
     <div class="home-page">
-        <n-breadcrumb separator=">" v-if="pathStr.length == 1 && pathStr[0] !== 'home'">
+        <n-breadcrumb separator=">" v-if="pathStr && pathStr.length >= 1 && pathStr[0] !== 'home'">
             <n-breadcrumb-item >
                 <RouterLink :to="{name: 'home' }">Home</RouterLink>
             </n-breadcrumb-item>
             <n-breadcrumb-item v-for="n in pathStr">
+                <RouterLink :to="{path: n }">
                 {{ n }}
+                </RouterLink>
             </n-breadcrumb-item>
         </n-breadcrumb>
         <router-view />

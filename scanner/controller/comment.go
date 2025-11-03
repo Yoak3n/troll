@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/Yoak3n/troll/scanner/database"
@@ -24,7 +23,6 @@ func NewDatabase(dir string, name string) *Database {
 
 func GlobalDatabase(args ...string) *Database {
 	once.Do(func() {
-		fmt.Println("Database inited")
 		if len(args) == 2 {
 			DB = NewDatabase(args[0], args[1])
 		}

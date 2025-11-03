@@ -11,6 +11,7 @@ type fetchArgs struct {
 	topic string
 	AVId  int64
 	BVId  string
+	UId   int64
 }
 
 func fetchCommand() *cli.Command {
@@ -47,6 +48,12 @@ func fetchCommand() *cli.Command {
 							Usage:       "specify a video by bvid",
 							Destination: &F.BVId,
 						},
+						&cli.Int64Flag{
+							Name:    "User Id",
+							Value:   -1,
+							Aliases: []string{"u"},
+							Usage:   "specify a user id",
+						},
 					}, {
 						&cli.StringFlag{
 							Name:        "topic",
@@ -68,6 +75,10 @@ func fetchEntry(cache string, f *fetchArgs) {
 		title = f.topic
 	}
 	handler.Init(TrollPath, "troll")
+	if f.UId != -1 {
+		handler.AddUserByUid(uint(f.UId))
+		return
+	}
 	h := handler.NewHandler(cache, title, f.topic, f.BVId, f.AVId)
 	h.Run()
 }

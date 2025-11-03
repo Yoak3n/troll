@@ -26,6 +26,7 @@ func NewVideoDataFromResponse(item model.SearchItem) *model.VideoData {
 		Avid:        item.Id,
 		Title:       util.SanitizeFilename(item.Title),
 		Bvid:        item.Bvid,
+		Cover:       item.Pic,
 		Description: item.Description,
 		Owner: model.UserData{
 			Uid:  item.Mid,
@@ -52,14 +53,15 @@ func GetAllComments(avid uint) []model.CommentData {
 			logger.Logger.Errorf("getComments err: %v", err)
 			continue
 		}
-		if len(currentPageComments) < 0 {
+		if len(currentPageComments) == 0 {
 			logger.Logger.Println("GetAllComments Fin")
-			return allComments
+			break
 		}
 		page += 1
 		// 从外部获得的评论列表，其子评论最多显示3条，需要进行展开访问
 		allComments = append(allComments, currentPageComments...)
 	}
+	return allComments
 
 }
 
@@ -75,7 +77,7 @@ func getComments(params map[string]string) ([]model.CommentData, error) {
 		return nil, err
 	}
 	if response.Code != 0 {
-		return nil, errors.New(fmt.Sprintf("Response err: %s", response.Message))
+		return nil, fmt.Errorf("response err: %s", response.Message)
 	}
 
 	comments := extractComments(response.Data.Replies, 0)
@@ -209,7 +211,7 @@ func LazilyGetAllComments(avid uint) []model.CommentData {
 			"web_location": "1315875",
 		}
 		if offset != "" {
-			params["pagination_str"] = url.QueryEscape(fmt.Sprintf(fmt.Sprintf(`{"offset":"%s"}`, offset)))
+			params["pagination_str"] = url.QueryEscape(fmt.Sprintf(`{"offset":"%s"}`, offset))
 		}
 		uri := util2.AppendParamsToUrl(LazilyLoadUrl, params)
 		resBuf := util.RequestGetWithAll(uri)

@@ -26,6 +26,7 @@ type VideoTable struct {
 	Avid        uint   `json:"avid" gorm:"primaryKey"`
 	Bvid        string `json:"bvid"`
 	Title       string `json:"title"`
+	Cover       string
 	Topic       string
 	Description string `json:"description"`
 	Owner       uint   `json:"owner"`

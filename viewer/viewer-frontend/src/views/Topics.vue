@@ -1,15 +1,16 @@
 <template>
     <h1>topics</h1>
-    <n-grid x-gap="12" :cols="3">
-        <n-gi v-for="topic in topics" :key="topic.name">
+    <n-grid x-gap="12" :cols="3" >
+        <n-gi v-for="topic in topics" :key="topic.name" v-if="topics.length > 0" >
             <n-card 
             :title="topic.name"
             tag="button" 
             hoverable 
+            :style="{'cursor': 'pointer'}"
             @click="()=>{
-
+                $router.push({ path: '/topic', query: { topicName: topic.name } });
             }">
-                {{ topic.count }}
+                包含{{ topic.count }}个视频
             </n-card>
 
         </n-gi>>
@@ -21,11 +22,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { fetchTopics } from '../api';
 
 import { NGrid, NGi, NCard } from 'naive-ui';
-import type { TopicsList } from '../types/topic';
+import type { TopicsList } from '../types';
 
+const $router = useRouter();
 const topics = ref<TopicsList[]>([]);
 
 const fetchTopicsList = async () => {
@@ -40,8 +43,6 @@ const fetchTopicsList = async () => {
 onMounted(() => {
     fetchTopicsList();
 });
-
-
 </script>
 
 <style scoped lang="less"></style>
