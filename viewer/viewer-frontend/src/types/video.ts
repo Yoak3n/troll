@@ -1,10 +1,17 @@
 import type { User } from "./user";
-export interface VideoDataWithCommentsCount {
+export interface VideoDataWithCommentsCount extends VideoData {
+    count: number
+}
+export interface VideoData {
     avid: number
     bvid: string
     title: string
     topic: string
     description: string
-    count: number
     author: User
+}
+
+export interface VideoDataGroupyByTopic{
+    topic: string
+    videos: VideoData[]
 }

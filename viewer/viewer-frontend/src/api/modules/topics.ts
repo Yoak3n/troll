@@ -9,4 +9,4 @@ const API = {
 export const fetchTopics = ()=>{
     return request.get<any, TopicListResponse[]>(API.TOPIC_URL)
 }
-export const fetchVideosByTopic = (topicName: string)=>request.get<any, VideoDataWithCommentsCount[]>(API.TOPIC_VIDEOS_URL + encodeURIComponent(topicName))
+export const fetchVideosByTopic = (topicName: string)=>request.get<any, VideoDataWithCommentsCount[]>(API.TOPIC_VIDEOS_URL + encodeURIComponent(topicName) + "/videos")

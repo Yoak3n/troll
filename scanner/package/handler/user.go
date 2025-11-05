@@ -23,8 +23,8 @@ func AddUserByUid(uid uint) {
 			Face string `json:"face"`
 		} `json:"data"`
 	}
-	var userResponse UserResponse
-	err := json.Unmarshal(resp, &userResponse)
+	userResponse := &UserResponse{}
+	err := json.Unmarshal(resp, userResponse)
 	if err != nil {
 		logger.Logger.Errorln(err)
 		return

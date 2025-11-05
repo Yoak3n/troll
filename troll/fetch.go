@@ -49,10 +49,11 @@ func fetchCommand() *cli.Command {
 							Destination: &F.BVId,
 						},
 						&cli.Int64Flag{
-							Name:    "User Id",
-							Value:   -1,
-							Aliases: []string{"u"},
-							Usage:   "specify a user id",
+							Name:        "User Id",
+							Value:       -1,
+							Aliases:     []string{"u"},
+							Usage:       "specify a user id",
+							Destination: &F.UId,
 						},
 					}, {
 						&cli.StringFlag{

@@ -27,10 +27,29 @@ func setupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 	setupTopicsRoutes(v1)
+	setupVideosRoutes(v1)
+	setupUserRoutes(v1)
+	setupSearchRoutes(v1)
 }
 
 func setupTopicsRoutes(group fiber.Router) {
 	topics := group.Group("/topics")
 	topics.Get("/list", handler.HandlerTopicsGet).Name("list")
-	topics.Get("/:topicName", handler.HandlerTopicVideosGet).Name("videos")
+	topics.Get("/:topicName/videos", handler.HandlerTopicVideosGet).Name("videos")
+}
+
+func setupVideosRoutes(group fiber.Router) {
+	videos := group.Group("/videos")
+	videos.Get("/:avid/comments", handler.HandlerVideoCommentsGet).Name("comments")
+}
+
+func setupUserRoutes(group fiber.Router) {
+	users := group.Group("/users").Name("users.")
+	users.Get("/:uid/comments", handler.HandlerUserCommentGet).Name("user.comments")
+	users.Get("/filter/coments", handler.HandlerUserCommentsFilter).Name("comments")
+}
+
+func setupSearchRoutes(group fiber.Router) {
+	search := group.Group("/search").Name("search.")
+	search.Get("/options", handler.HandlerSearhOptionsGet).Name("options")
 }
