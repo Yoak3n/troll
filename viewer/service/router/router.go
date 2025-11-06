@@ -4,12 +4,15 @@ import (
 	"github.com/Yoak3n/troll/viewer/consts"
 	"github.com/Yoak3n/troll/viewer/service/controller"
 	"github.com/Yoak3n/troll/viewer/service/handler"
+	"github.com/Yoak3n/troll/viewer/service/ws"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func InitRouter() {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
+	ws.InitWebsocketHub()
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -26,6 +29,23 @@ func InitRouter() {
 func setupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
+	v1.Use("/ws", func(c *fiber.Ctx) error {
+		// IsWebSocketUpgrade returns true if the client
+		// requested upgrade to the WebSocket protocol.
+		if websocket.IsWebSocketUpgrade(c) {
+			c.Locals("allowed", true)
+			return c.Next()
+		}
+		return c.Status(403).SendString("Request origin not allowed")
+	})
+	v1.Get("/ws/:id", websocket.New(func(conn *websocket.Conn) {
+		id := conn.Params("id")
+		if id != "" {
+			ws.Hub.Register(id, conn)
+		} else {
+			conn.WriteMessage(400, []byte("need a id"))
+		}
+	}))
 	setupTopicsRoutes(v1)
 	setupVideosRoutes(v1)
 	setupUserRoutes(v1)

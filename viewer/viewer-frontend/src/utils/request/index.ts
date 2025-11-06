@@ -5,7 +5,6 @@ let request = axios.create({
     timeout:5000,
 });
 
-
 request.interceptors.response.use((response)=>{
     // 简化输出
     return response.data
