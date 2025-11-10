@@ -44,12 +44,14 @@ func configCommand() *cli.Command {
 
 func setCookie(cookie string) error {
 	return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
-		Cookie: cookie,
+		Type: "cookie",
+		Data: cookie,
 	})
 }
 
 func setProxy(proxy string) error {
 	return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
-		Proxy: proxy,
+		Type: "proxy",
+		Data: proxy,
 	})
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/Yoak3n/troll/viewer/config"
 	"github.com/Yoak3n/troll/viewer/consts"
 	"github.com/Yoak3n/troll/viewer/service/controller"
 	"github.com/Yoak3n/troll/viewer/service/handler"
@@ -13,6 +14,8 @@ import (
 func InitRouter() {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
 	ws.InitWebsocketHub()
+	handler.InitHandlerState()
+	config.GetConfiguration()
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -50,6 +53,7 @@ func setupRoutes(app *fiber.App) {
 	setupVideosRoutes(v1)
 	setupUserRoutes(v1)
 	setupSearchRoutes(v1)
+	setupSettingRoutes(v1)
 }
 
 func setupTopicsRoutes(group fiber.Router) {
@@ -72,4 +76,10 @@ func setupUserRoutes(group fiber.Router) {
 func setupSearchRoutes(group fiber.Router) {
 	search := group.Group("/search").Name("search.")
 	search.Get("/options", handler.HandlerSearhOptionsGet).Name("options")
+}
+
+func setupSettingRoutes(group fiber.Router) {
+	setting := group.Group("/setting").Name("setting.")
+	setting.Get("/", handler.HandlerSettingGet).Name("Get")
+	setting.Post("/", handler.HandlerSettingUpdate).Name("Update")
 }

@@ -11,7 +11,7 @@ type WsAction string
 const (
 	ConnectedSuccess WsAction = "Connected"
 	LogMessage       WsAction = "Log"
-	AddVideo         WsAction = "Video"
+	AddTaskMessage   WsAction = "Task"
 	TaskProcess      WsAction = "Process"
 	TasksProcess     WsAction = "Processes"
 	CloseMessage     WsAction = "Close"
@@ -64,4 +64,17 @@ func NewTasksProcessesDataToMessage(data []TaskProcessData) *WebsocketMessage {
 		Action: TasksProcess,
 		Data:   data,
 	}
+}
+
+// TODO 怎么设计任务呢？
+type TaskData struct {
+	Id string
+	// 是topic还是video
+	Type string
+	// 指定搜索关键词、视频BV
+	Data []string
+	// 指话题
+	Topic string
+	// 指定搜索翻页页数,默认为1
+	Page int
 }

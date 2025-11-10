@@ -3,13 +3,15 @@ package ws
 import (
 	"encoding/json"
 	"log"
+	"sync"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 )
 
 type WebSocketHub struct {
 	// Registered clients.
-	clients map[string]*websocket.Conn
+	clients map[string]*Client
 
 	// Inbound messages from the clients.
 	received chan map[*websocket.Conn][]byte
@@ -18,16 +20,19 @@ type WebSocketHub struct {
 	register chan *Client
 
 	// Unregister requests from clients.
-	unregister chan *websocket.Conn
+	unregister chan string
 
 	// broadcast message to all clients
 	broadcast chan []byte
+	Tasks     chan TaskData
 	isRuning  bool
 }
 
 type Client struct {
 	id   string
 	conn *websocket.Conn
+	mu   sync.RWMutex
+	last int64
 }
 
 func NewWebSocketHub() *WebSocketHub {
@@ -35,8 +40,9 @@ func NewWebSocketHub() *WebSocketHub {
 		broadcast:  make(chan []byte),
 		received:   make(chan map[*websocket.Conn][]byte),
 		register:   make(chan *Client),
-		unregister: make(chan *websocket.Conn),
-		clients:    make(map[string]*websocket.Conn),
+		unregister: make(chan string),
+		clients:    make(map[string]*Client),
+		Tasks:      make(chan TaskData, 10),
 		isRuning:   false,
 	}
 }
@@ -52,56 +58,92 @@ func (h *WebSocketHub) Run() {
 	if h.isRuning {
 		return
 	}
+	defer func() {
+		h.isRuning = false
+	}()
 	h.isRuning = true
 	for {
 		select {
 		case client := <-h.register:
-			h.clients[client.id] = client.conn
-		case client := <-h.unregister:
-			for id, v := range h.clients {
-				if client == v {
-					delete(h.clients, id)
-					client.Conn.Close()
-					log.Printf("Client disconnected with %d clients\n", len(h.clients))
+			h.clients[client.id] = client
+			log.Printf("New connection with %d clients\n", len(h.clients))
+		case id := <-h.unregister:
+			if client, ok := h.clients[id]; ok {
+				close := WebsocketMessage{
+					Action: CloseMessage,
+					Data:   "Close",
 				}
+				client.mu.Lock()
+				client.conn.Conn.WriteJSON(close)
+				delete(h.clients, id)
+				client.conn.Conn.Close()
+				client.mu.Unlock()
+				log.Printf("Client disconnected with %d clients\n", len(h.clients))
 			}
 		case message := <-h.broadcast:
 			for k, client := range h.clients {
-				if err := client.WriteMessage(websocket.TextMessage, message); err != nil {
-					client.Conn.Close()
+				if err := client.conn.WriteMessage(websocket.TextMessage, message); err != nil {
+					client.conn.Conn.Close()
 					delete(h.clients, k)
 				}
 			}
+		case <-h.received:
+
 		}
 	}
 }
 
 func (h *WebSocketHub) Register(id string, conn *websocket.Conn) {
 	if k, ok := h.clients[id]; ok {
-		k.Conn.Close()
+		k.conn.Conn.Close()
 		delete(h.clients, id)
 	}
 	client := &Client{
 		id:   id,
 		conn: conn,
+		mu:   sync.RWMutex{},
+		last: time.Now().Unix(),
 	}
 	h.register <- client
-	log.Printf("New connection with %d clients\n", len(h.clients))
 	sendLog(client.conn, "Connected successfully")
-	h.listen(conn)
+	go h.healthCheck(client)
+	h.listen(id, conn)
 }
 
 func (h *WebSocketHub) Broadcast(message []byte) {
 	h.broadcast <- message
 }
 
-func (h *WebSocketHub) listen(client *websocket.Conn) {
+func (h *WebSocketHub) healthCheck(client *Client) {
+	ticker := time.NewTicker(60 * time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
+		client.mu.RLock()
+		last := client.last
+		now := time.Now().Unix()
+		if (now - last) >= 180 {
+			log.Println("check failed")
+			h.unregister <- client.id
+			return
+		}
+		log.Println("check successfully")
+		pingMessage := WebsocketMessage{
+			Action: PingMessage,
+			Data:   "ping",
+		}
+		client.conn.Conn.WriteJSON(pingMessage)
+		client.mu.RUnlock()
+	}
+}
+
+func (h *WebSocketHub) listen(id string, conn *websocket.Conn) {
 	defer func() {
-		h.unregister <- client
+		log.Println("unlisten")
+		h.unregister <- id
 	}()
 	for {
-		t, msg, err := client.Conn.ReadMessage()
-		log.Println("T", t, string(msg))
+		t, msg, err := conn.Conn.ReadMessage()
+		log.Println("T", t, id, string(msg))
 		if err != nil || t == -1 {
 			break
 		}
@@ -118,32 +160,47 @@ func (h *WebSocketHub) listen(client *websocket.Conn) {
 				Action: PongMessage,
 				Data:   "pong",
 			}
-			client.Conn.WriteJSON(pongMessage)
-		}
-
-		h.received <- map[*websocket.Conn][]byte{client: msg}
-	}
-}
-
-func (h *WebSocketHub) Handle() {
-	for msg := range h.received {
-		for client, msg := range msg {
-			// 最强人工智能
-			if err := client.WriteMessage(websocket.TextMessage, msg); err != nil {
-				client.Conn.Close()
+			conn.Conn.WriteJSON(pongMessage)
+		case AddTaskMessage:
+			// 无法直接断言为任务数据
+			buf, _ := json.Marshal(messageData.Data)
+			taskData := TaskData{}
+			err := json.Unmarshal(buf, &taskData)
+			if err != nil {
+				log.Println("task data unmarshal err:", err)
 			}
+			h.Tasks <- taskData
 		}
+		client, ok := h.clients[id]
+		if ok {
+			client.mu.Lock()
+			client.last = time.Now().Unix()
+			client.mu.Unlock()
+			h.clients[id] = client
+		}
+		h.received <- map[*websocket.Conn][]byte{conn: msg}
 	}
 }
 
-func (h *WebSocketHub) broadcastLog(content string) {
-	logItem := NewLogDataToMessage(content)
-	j, err := json.Marshal(logItem)
-	if err != nil {
-		return
-	}
-	h.Broadcast(j)
-}
+// func (h *WebSocketHub) Handle() {
+// 	for msg := range  {
+// 		for client, msg := range msg {
+// 			// 最强人工智能
+// 			if err := client.WriteMessage(websocket.TextMessage, msg); err != nil {
+// 				client.Conn.Close()
+// 			}
+// 		}
+// 	}
+// }
+
+// func (h *WebSocketHub) broadcastLog(content string) {
+// 	logItem := NewLogDataToMessage(content)
+// 	j, err := json.Marshal(logItem)
+// 	if err != nil {
+// 		return
+// 	}
+// 	h.Broadcast(j)
+// }
 
 func sendLog(conn *websocket.Conn, content string) {
 	logItem := NewLogDataToMessage(content)

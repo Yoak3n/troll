@@ -2,10 +2,14 @@
     <div class="console-wrapper">
         状态 <n-badge :type="websocketStatus ? 'success' : 'error'" dot />
         <div class="tasks-woker">
-            <n-card title="任务池" >
+            <n-card title="任务池">
+                <n-space>
+                    <n-button @click="showTaskModal = true">添加任务</n-button>
+                </n-space>
+
                 <n-list v-if="taskPool.length != 0">
                     <n-list-item v-for="task in taskPool" :key="task.id">
-                        <TaskProcessBar :task="task"/>
+                        <TaskProcessBar :task="task" />
                     </n-list-item>
                 </n-list>
             </n-card>
@@ -20,27 +24,33 @@
                 </div>
             </n-collapse-item>
         </n-collapse>
+
     </div>
+            <n-modal v-model:show="showTaskModal">
+            <TaskModal :submit-task-form="uploadTaskData"/>
+        </n-modal>
 </template>
 
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import { NCollapse, NCollapseItem, NBadge, NCard,NList,NListItem } from 'naive-ui';
-import type { LogItem, TaskProcess, WsMessage } from '../types';
+import { NCollapse, NCollapseItem, NBadge, NCard, NList, NListItem, NSpace, NButton,NModal } from 'naive-ui';
+import type { LogItem, TaskForm, TaskProcess, WsMessage } from '../types';
 import LogList from '../components/LogList/index.vue'
 import TaskProcessBar from '../components/Task/index.vue'
+import TaskModal from '../components/Task/TaskModal.vue';
 import { random } from 'lodash-es';
 
 const websocketStatus = ref(false)
 const $websocket = ref<WebSocket | null>(null)
+const showTaskModal = ref(false)
 let clientId = ""
 let heartBeatTimer: number
 let reconnectTimer: number | undefined
 let toClose = false
 const initWebSocket = () => {
     //初始化weosocket
-    const wsuri = import.meta.env.VITE_APP_BASE_API + "/ws/"+ clientId; //ws地址
+    const wsuri = import.meta.env.VITE_APP_BASE_API + "/ws/" + clientId; //ws地址
     $websocket.value = new WebSocket(wsuri);
     $websocket.value.onopen = () => {
         console.log('连接成功')
@@ -55,6 +65,7 @@ const initWebSocket = () => {
     $websocket.value.onmessage = (event) => {
         if (event.data == "success") { return }
         const object: WsMessage = JSON.parse(event.data)
+        console.log(object);
         switch (object.action) {
             case "Log":
                 const item: LogItem = object.data
@@ -62,6 +73,12 @@ const initWebSocket = () => {
                     logsList.value.shift()
                 }
                 logsList.value.push(item)
+                break
+            case "Ping":
+                pongHandle()
+                break
+            case "Close":
+                closeConnection()
                 break
             default:
                 break
@@ -78,8 +95,8 @@ const initWebSocket = () => {
 }
 const logsList = ref<LogItem[]>([])
 const taskPool = ref<TaskProcess[]>([])
+
 const reconnectHandle = () => {
-    console.log();
     let index = 0
     const timer = setInterval(() => {
         initWebSocket()
@@ -90,10 +107,9 @@ const reconnectHandle = () => {
             index++
             console.log(`重新连接，第${index}次重试...`, timer);
         }
-    }, 1000)
+    }, 5000)
     return timer
 }
-
 const pingHandle = () => {
     if (websocketStatus) {
         const ping = JSON.stringify({ action: "Ping", data: "ping" })
@@ -103,8 +119,23 @@ const pingHandle = () => {
     }
 }
 
+const pongHandle = () => {
+    if (websocketStatus) {
+        const pong = JSON.stringify({ action: "Pong", data: "pong" })
+        $websocket.value?.send(pong)
+    } else {
+        clearInterval(heartBeatTimer)
+    }
+}
+const closeConnection = () => {
+    const closeMsg = JSON.stringify({ action: "Close", data: clientId })
+    $websocket.value?.send(closeMsg)
+    toClose = true
+    $websocket.value?.close(1000)
+    $websocket.value = null
+}
 onMounted(() => {
-    clientId = random(1,1000).toString()
+    clientId = random(1, 1000).toString()
     initWebSocket()
 })
 onUnmounted(() => {
@@ -112,12 +143,13 @@ onUnmounted(() => {
     clearInterval(heartBeatTimer)
     clearInterval(reconnectTimer)
 })
-const closeConnection = ()=>{
-    const closeMsg = JSON.stringify({action: "Close",data: clientId})
-    $websocket.value?.send(closeMsg)
-    toClose = true
-    $websocket.value?.close(1000)
-    $websocket.value = null
+
+const uploadTaskData = (task:TaskForm)=>{
+    const taskMessage:WsMessage = {
+        action: 'Task',
+        data: task
+    }
+    $websocket.value?.send(JSON.stringify(taskMessage))
 }
 
 </script>

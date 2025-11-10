@@ -7,8 +7,8 @@ import (
 )
 
 type ConfigurationTable struct {
-	Cookie string
-	Proxy  string
+	Type string
+	Data string
 	gorm.Model
 }
 

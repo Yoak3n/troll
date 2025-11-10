@@ -130,13 +130,26 @@ func (d *Database) QuerySimilarComments(topic string, n int) ([]model.SimilarCom
 	return comments, nil
 }
 
-func (d *Database) QueryConfiguration() (*model.ConfigurationTable, error) {
-	c := &model.ConfigurationTable{}
-	c.Model = gorm.Model{
-		ID: 1,
+func (d *Database) QueryConfigurationCookie() (*model.ConfigurationTable, error) {
+	c := &model.ConfigurationTable{
+		Type: "cookie",
 	}
 	err := d.db.First(c).Error
 	return c, err
+}
+
+func (d *Database) QueryConfigurationProxy() (*model.ConfigurationTable, error) {
+	c := &model.ConfigurationTable{
+		Type: "proxy",
+	}
+	err := d.db.First(c).Error
+	return c, err
+}
+
+func (d *Database) QueryConfiguration() ([]model.ConfigurationTable, error) {
+	confs := make([]model.ConfigurationTable, 0)
+	err := d.db.Find(&confs).Error
+	return confs, err
 }
 
 func (d *Database) UpdateConfiguration(c *model.ConfigurationTable) error {
