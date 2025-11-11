@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { NDropdown } from 'naive-ui';
 import type { DropdownOption } from 'naive-ui';
 import type { DropdownOptionProps } from '../../types/option'
@@ -17,6 +17,7 @@ interface Props {
 }
 
 const $router = useRouter();
+const $route = useRoute()
 const { context, uid } = defineProps<Props>();
 
 const options: Array<DropdownOption> = [
@@ -29,7 +30,7 @@ const onClickoutside = () => context?.OnClickoutside();
 const handleSelect = async (key: string) => {
     switch (key) {
         case 'viewProfile':
-            $router.push({ name: 'user', query: { uid: uid.toString() } });
+            $router.push({ name: 'user', query: { uid: uid.toString(), topicName: $route.query.topicName as string } });
             break
         case 'userSpace':
             window.open(`https://space.bilibili.com/${uid}`, '_blank');

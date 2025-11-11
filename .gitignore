@@ -1,4 +1,5 @@
 .idea/
 /config.yaml
 data/
+dist/
 *.exe

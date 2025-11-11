@@ -19,7 +19,8 @@ type VideoData struct {
 }
 
 type VideoDataWithCommentsCount struct {
-	Count int `json:"count"`
+	Count    int    `json:"count"`
+	UpdateAt string `json:"update_at"`
 	VideoData
 }
 
@@ -149,7 +150,8 @@ func (d *Database) GetVideosByTopic(topicName string) []VideoDataWithCommentsCou
 					Location: video.UserTable.Location,
 				},
 			},
-			Count: video.Count,
+			Count:    video.Count,
+			UpdateAt: video.VideoTable.UpdatedAt.Format("2006-01-02 15:04:05"),
 		}
 		ret = append(ret, vdwc)
 	}

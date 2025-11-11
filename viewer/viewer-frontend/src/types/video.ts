@@ -1,6 +1,7 @@
 import type { User } from "./user";
 export interface VideoDataWithCommentsCount extends VideoData {
     count: number
+    update_at: string
 }
 export interface VideoData {
     avid: number

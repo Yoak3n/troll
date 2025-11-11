@@ -9,23 +9,29 @@ const routes: RouteRecordRaw[] = [
         children: [
             {
                 path: "home", name: "home", component: () => import("../views/Home.vue"), children: [
-                    { path: "topics", name: "topics", component: () => import("../views/Topics.vue"), children: [
-                        { path: "topic", name: "topic", component: () => import("../views/TopicDetail.vue"), children: [
-                            {path: "video", name: "video", component: () => import("../views/VideoDetail.vue")}
-                        ], beforeEnter: (to)=>{
-                            const topic = to.query.topicName as string | undefined
-                            if (topic) {
-                                return true
-                            }else{
-                                return {name: 'topics'}
+                    {
+                        path: "topics", name: "topics", component: () => import("../views/Topics.vue"), children: [
+                            {
+                                path: "topic", name: "topic", component: () => import("../views/TopicDetail.vue"), children: [
+                                    { path: "video", name: "video", component: () => import("../views/VideoDetail.vue")}
+                                ], beforeEnter: (to) => {
+                                    const topic = to.query.topicName as string | undefined
+                                    if (topic) {
+                                        return true
+                                    } else {
+                                        return { name: 'topics' }
+                                    }
+                                }
                             }
-                        }}
-                    ]},
+                        ]
+                    },
                     { path: "videos", name: "videos", component: () => import("../views/Videos.vue") },
-                    { path: "users", name: "users", component: () => import("../views/Users.vue"), redirect: '/home/users/user-search', children: [
-                        {path: "user-search", name:"user-search", component: ()=> import('../views/UserSearch.vue')},
-                        {path: "user",name:"user", component: ()=> import('../views/UserDetail.vue')}
-                    ]},
+                    {
+                        path: "users", name: "users", component: () => import("../views/Users.vue"), redirect: '/home/users/user-search', children: [
+                            { path: "user-search", name: "user-search", component: () => import('../views/UserSearch.vue') },
+                            { path: "user", name: "user", component: () => import('../views/UserDetail.vue') }
+                        ]
+                    },
                 ]
             },
             { path: "console", name: "console", component: () => import("../views/Console.vue") },

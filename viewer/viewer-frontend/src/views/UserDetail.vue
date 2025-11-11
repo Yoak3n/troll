@@ -9,38 +9,62 @@
                     共{{ group.comments.length }}条评论
                 </template>
                 <n-card v-for="comment in group.comments" :key="comment.id" embedded>
-                    <div @click="jumpToReply(group.bvid,comment.id)" style="cursor: pointer;">{{ comment.content }}</div>
+                    <div @click="(e)=>onClickedComment({x:e.clientX,y:e.clientY,commentId:comment.id,bvid:group.bvid})" style="cursor: pointer;">{{ comment.content }}</div>
                 </n-card>
             </n-collapse-item>
         </n-collapse>
     </n-card>
+        <comment-context
+        :context="{ x: xRef, y: yRef, showDropdown: showCommentContext, OnClickoutside:()=> showCommentContext=false, HandleSelect: () => { } }"
+        :comment-id="clickedCommentId" :bv-id="currentVideoBvid" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { NCollapse, NCollapseItem, NCard } from 'naive-ui';
-import { fetchCommentsBySearchFilter } from '../api/modules/users';
+import CommentContext from '../components/Comment/CommentContext.vue'
+import { fetchCommentsBySearchFilter } from '../api';
 import type { CommentViewWithVideo, SearchFilterRequest } from '../types';
-import { jumpToReply} from '../utils/window/reply'
+
 const $route = useRoute()
+const $router = useRouter()
 const comments = ref<CommentViewWithVideo[]>([])
+
+const xRef = ref(-1)
+const yRef = ref(-1)
+const clickedCommentId = ref(-1)
+const showCommentContext = ref(false)
+const currentVideoBvid = ref('')
+const onClickedComment = ({x,y,commentId,bvid}:{x:number,y:number,commentId: number, bvid: string})=>{
+    xRef.value = x
+    yRef.value = y
+    clickedCommentId.value = commentId
+    currentVideoBvid.value = bvid
+    showCommentContext.value = true
+
+}
 onMounted(async () => {
     const uid = $route.query.uid ? Number($route.query.uid) : undefined
     const name = $route.query.name as string
     const rangeType = $route.query.rangeType as string
     const rangeData = $route.query.rangeData as string
+    const topicName = $route.query.topicName as string
     const data: SearchFilterRequest = {
         name,
         uid,
         rangeType,
         rangeData
     }
-    console.log(data);
-
     const res = await fetchCommentsBySearchFilter(data)
-    console.log(res);
     comments.value = res
+
+    $router.afterEach((to)=>{
+        if (to.name == 'topic' && topicName){
+            to.query.topicName = topicName
+        }
+
+    })
 })
 
 

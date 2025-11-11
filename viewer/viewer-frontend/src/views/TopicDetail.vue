@@ -6,13 +6,18 @@
                 <n-card :title="EllipsisText(video.title, 15)" tag="div" hoverable content-class="video-card-content"
                     size="medium"
                     :content-style="{ 'display': 'flex', 'justify-content': 'end', 'max-height': '64rem' }">
-                    <router-link :to="{ name: 'video', query: { 'avid': video.avid } }" style="color: #1797FF;">包含{{
+                    <router-link :to="{ name: 'video', query: { 'avid': video.avid, 'topicName': video.topic } }" style="color: #1797FF;">包含{{
                         video.count}}条评论
                     </router-link>
                     <template #footer>
-                        <NFlex align="center">
-                            <NAvatar :src="video.author.avatar" alt="author avatar" round />
-                            {{ video.author.name }}
+                        <NFlex justify="space-between">
+                            <NFlex align="center">
+                                <NAvatar :src="video.author.avatar" alt="author avatar" round />
+                                {{ video.author.name }}
+                            </NFlex>
+                            <NFlex align="center">
+                                更新时间：{{ video.update_at }}
+                            </NFlex>
                         </NFlex>
                     </template>
                 </n-card>

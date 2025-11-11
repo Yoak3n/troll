@@ -8,5 +8,15 @@ export default defineConfig({
     alias: {
         '@': './src'
     }
+  },
+  build: {
+    rolldownOptions: {
+        output: {
+            dir: '../service/router/dist',
+            entryFileNames: 'static/js/[name]-[hash].js',
+            chunkFileNames: 'static/js/[name]-[hash].js',
+            assetFileNames: 'static/[ext]/[name]-[hash].[ext]'
+        }
+    }
   }
 })

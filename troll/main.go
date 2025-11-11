@@ -36,6 +36,7 @@ func main() {
 			fetchCommand(),
 			queryCommand(),
 			configCommand(),
+			viewCommand(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{

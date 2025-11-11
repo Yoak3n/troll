@@ -1,6 +1,11 @@
 package router
 
 import (
+	"embed"
+	"fmt"
+	"io/fs"
+	"net/http"
+
 	"github.com/Yoak3n/troll/viewer/config"
 	"github.com/Yoak3n/troll/viewer/consts"
 	"github.com/Yoak3n/troll/viewer/service/controller"
@@ -9,9 +14,15 @@ import (
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 )
 
-func InitRouter() {
+// 下划线开头的文件不能被直接嵌入，需要使用all
+
+//go:embed all:dist/*
+var embeddedFiles embed.FS
+
+func InitRouter(port ...int) error {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
 	ws.InitWebsocketHub()
 	handler.InitHandlerState()
@@ -22,11 +33,61 @@ func InitRouter() {
 		AllowHeaders: "*",
 		AllowMethods: "*",
 	}))
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	subFS, err := fs.Sub(embeddedFiles, "dist")
+	if err != nil {
+		return err
+	}
 	setupRoutes(app)
-	app.Listen(":10420")
+	app.Use("/", filesystem.New(filesystem.Config{
+		Root:   http.FS(subFS),
+		Browse: true,         // 禁用目录浏览
+		Index:  "index.html", // 默认文件
+		MaxAge: 3600,         // 缓存时间
+	}))
+	// app.Static("/", "./service/router/dist", fiber.Static{
+	// 	Compress:      true,
+	// 	ByteRange:     true,
+	// 	Browse:        true,
+	// 	Index:         "index.html",
+	// 	CacheDuration: 10 * time.Second,
+	// 	MaxAge:        3600,
+	// })
+	if len(port) > 0 {
+		app.Listen(fmt.Sprintf(":%d", port[0]))
+	} else {
+		app.Listen(":10420")
+	}
+
+	return nil
+}
+
+func InitViewCommandApp(files fs.FS, port int) error {
+	controller.GlobalDatabase(consts.TrollPath, "troll")
+	ws.InitWebsocketHub()
+	handler.InitHandlerState()
+	config.GetConfiguration()
+	app := fiber.New()
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "*",
+		AllowMethods: "*",
+	}))
+	setupRoutes(app)
+
+	// 创建子文件系统，因为embed指令是 //go:embed dist/*，我们需要dist目录作为根
+	subFS, err := fs.Sub(files, "dist")
+	if err != nil {
+		return err
+	}
+	app.Use("/", filesystem.New(filesystem.Config{
+		Root:   http.FS(subFS),
+		Browse: false,        // 禁用目录浏览
+		Index:  "index.html", // 默认文件
+		MaxAge: 3600,         // 缓存时间
+	}))
+
+	app.Listen(fmt.Sprintf(":%d", port))
+	return nil
 }
 
 func setupRoutes(app *fiber.App) {

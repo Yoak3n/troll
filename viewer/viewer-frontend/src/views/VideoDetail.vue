@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, provide, watch, nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute,useRouter } from 'vue-router';
 import { NList, NPagination, NBackTop } from 'naive-ui';
 import { fetchCommentsByVideo } from '../api';
 import type { CommentView, CommentViewWithVideo } from '../types';
@@ -26,6 +26,7 @@ import CommentContext from '../components/Comment/CommentContext.vue'
 import Comment from '../components/Comment/index.vue';
 import { jumpToReply } from '../utils/window/reply';
 
+const $router = useRouter()
 // 需要分页，不然一次性渲染上万条评论
 const commentsList = ref<CommentView[]>([]);
 const xRef = ref<number>(-1)
@@ -48,8 +49,6 @@ const popUserContext = ({ x, y, uid }: { x: number, y: number, uid: number }) =>
     showUserContext.value = true
 }
 const popCommentContext = ({ x, y, commentId }: { x: number, y: number, commentId: number }) => {
-    console.log('comment');
-    
     contextType.value = 'comment'
     xRef.value = x
     yRef.value = y
@@ -93,6 +92,12 @@ onMounted(async () => {
     length.value = commentsData.comments.length
     pageCout.value = Math.ceil(length.value / 100)
     renderCommentsList(commentsData.comments)
+
+    $router.afterEach((to)=>{
+        if (to.name == 'topic'){
+            to.query.topicName = commentsData.topic
+        }
+    })
 });
 
 </script>
