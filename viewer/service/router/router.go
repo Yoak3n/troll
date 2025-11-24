@@ -74,16 +74,15 @@ func InitViewCommandApp(files fs.FS, port int) error {
 	}))
 	setupRoutes(app)
 
-	// 创建子文件系统，因为embed指令是 //go:embed dist/*，我们需要dist目录作为根
 	subFS, err := fs.Sub(files, "dist")
 	if err != nil {
 		return err
 	}
 	app.Use("/", filesystem.New(filesystem.Config{
 		Root:   http.FS(subFS),
-		Browse: false,        // 禁用目录浏览
-		Index:  "index.html", // 默认文件
-		MaxAge: 3600,         // 缓存时间
+		Browse: false,
+		Index:  "index.html",
+		MaxAge: 3600,
 	}))
 
 	app.Listen(fmt.Sprintf(":%d", port))
@@ -115,6 +114,7 @@ func setupRoutes(app *fiber.App) {
 	setupUserRoutes(v1)
 	setupSearchRoutes(v1)
 	setupSettingRoutes(v1)
+	setupCommentRoutes(v1)
 }
 
 func setupTopicsRoutes(group fiber.Router) {
@@ -143,4 +143,9 @@ func setupSettingRoutes(group fiber.Router) {
 	setting := group.Group("/setting").Name("setting.")
 	setting.Get("/", handler.HandlerSettingGet).Name("Get")
 	setting.Post("/", handler.HandlerSettingUpdate).Name("Update")
+}
+
+func setupCommentRoutes(group fiber.Router) {
+	comments := group.Group("/comments").Name("comments.")
+	comments.Get("/search", handler.HandleCommentSearchWithKeyword).Name("search")
 }

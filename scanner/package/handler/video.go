@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Yoak3n/gulu/logger"
 	util2 "github.com/Yoak3n/gulu/util"
@@ -121,12 +123,17 @@ func fetchVideoInfo(v *Video) *model.SearchItem {
 	}
 
 	uri := util3.AppendParamsToUrl(VideoInfoUrl, params)
-	resBuf := util.RequestGetWithAll(uri)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	accountID, cookie := accountLimiter.GetAccount(ctx)
+	resBuf := util.RequestGetWithAll(uri, cookie)
+	cancel()
 	response := &model.VideoInfoResponse{}
 	err := json.Unmarshal(resBuf, response)
 	if err != nil {
+		accountLimiter.Penalize(accountID)
 		logger.Logger.Errorf("fetch video info failed: %v", err)
 	}
+	accountLimiter.Reward(accountID)
 	searchItem := &model.SearchItem{
 		Title:  util.ExtractContentWithinTag(response.Data.Title),
 		Id:     response.Data.Aid,

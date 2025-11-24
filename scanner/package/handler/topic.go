@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -52,51 +53,30 @@ func (t *Topic) fetchVideos() {
 		"order":       "totalrank",
 	}
 	addr := util3.AppendParamsToUrl(SearchUrl, params)
-	resBuf := util.RequestGetWithAll(addr)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	accountID, cookie := accountLimiter.GetAccount(ctx)
+	resBuf := util.RequestGetWithAll(addr, cookie)
+	cancel()
 	videos := make([]model.VideoData, 0)
 	response := &model.SearchResponse{}
 	err := json.Unmarshal(resBuf, response)
 	if err != nil {
+		accountLimiter.Penalize(accountID)
 		logger.Logger.Errorf("Unmarshal json fail: %v", err)
 		return
 	}
 	if response.Code != 0 {
+		accountLimiter.Penalize(accountID)
 		logger.Logger.Errorf("Get %s failed: %s", addr, response.Message)
 		return
 	}
+	accountLimiter.Reward(accountID)
 	for i := 1; i <= 2; i++ {
 		t.wg.Add(1)
 		go t.worker(i, t.jobs)
 	}
-	// Begin
-
 	for _, value := range response.Data.Result {
 		t.jobs <- value
-		//v := NewVideoDataFromResponse(value)
-		//out := &dto.VideoDataOutput{
-		//	VideoID:   v.Bvid,
-		//	Count:     countComments(v),
-		//	VideoData: v,
-		//}
-		//videos = append(videos, *v)
-		//jsonData, err := json.Marshal(out)
-		//if err != nil {
-		//	logger.Logger.Errorln(err)
-		//}
-		//err = util2.CreateDirNotExists(fmt.Sprintf("data/%s", t.Name))
-		//if err != nil {
-		//	return
-		//}
-		//file, err := os.Create(fmt.Sprintf("data/%s/%s.json", t.Name, v.Title))
-		//if err != nil {
-		//	logger.Logger.Errorln(err)
-		//	continue
-		//}
-		//_, err = file.Write(jsonData)
-		//if err != nil {
-		//	logger.Logger.Errorln(err)
-		//}
-		//file.Close()
 	}
 	close(t.jobs)
 	t.wg.Wait()

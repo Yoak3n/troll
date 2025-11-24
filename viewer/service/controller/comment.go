@@ -20,7 +20,6 @@ type CommentGroupByVideo struct {
 }
 
 func (d *Database) GetCommentsByVideo(avid uint) CommentGroupByVideo {
-
 	videoData := d.GetVideoByAvid(avid)
 	query1 := `
 	SELECT c.*,u.*
@@ -80,4 +79,30 @@ func (d *Database) GetCommentsByVideo(avid uint) CommentGroupByVideo {
 		commentsGroupByVideo.Comments = append(commentsGroupByVideo.Comments, comment)
 	}
 	return commentsGroupByVideo
+}
+
+func (d *Database) SearchCommentWithKeyword(keyword string) []CommentData {
+	query := `
+	SELECT c.*,u.*
+	FROM comment_tables c
+	INNER JOIN user_tables u ON c.owner = u.uid
+	WHERE c.text LIKE ?`
+	result := make([]CommentQuery, 0)
+	if err := d.db.Raw(query, "%"+keyword+"%").Scan(&result).Error; err != nil {
+		return nil
+	}
+	comments := make([]CommentData, 0, len(result))
+	for _, item := range result {
+		comments = append(comments, CommentData{
+			Id:      item.CommentId,
+			Content: item.Text,
+			Owner: Author{
+				Uid:      item.Uid,
+				Name:     item.Username,
+				Avatar:   item.Avatar,
+				Location: item.Location,
+			},
+		})
+	}
+	return comments
 }

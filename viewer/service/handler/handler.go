@@ -11,14 +11,14 @@ import (
 var handlerState *HandlerState
 
 type HandlerState struct {
-	tasks []ws.TaskProcessData
+	tasks map[string]ws.TaskProcessData
 	mu    sync.RWMutex
 	wg    sync.WaitGroup
 }
 
 func InitHandlerState() {
 	handlerState = &HandlerState{
-		tasks: make([]ws.TaskProcessData, 0),
+		tasks: make(map[string]ws.TaskProcessData),
 		mu:    sync.RWMutex{},
 		wg:    sync.WaitGroup{},
 	}

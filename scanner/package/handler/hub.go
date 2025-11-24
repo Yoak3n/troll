@@ -10,6 +10,7 @@ import (
 func Init(dir string, name string) {
 	logger.Init()
 	config.Init(dir, name)
+	InitAccountLimiter()
 }
 
 type Handler struct {

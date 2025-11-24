@@ -22,7 +22,7 @@ const { context, uid } = defineProps<Props>();
 
 const options: Array<DropdownOption> = [
     { label: '所有评论', key: 'viewProfile', type: 'normal' },
-    { label: '个人空间', key: 'userSpace', type: 'normal' },
+    { label: '去TA的个人空间', key: 'userSpace', type: 'normal' },
     { label: '取消', key: 'cancel', type: 'warning' },
 ];
 

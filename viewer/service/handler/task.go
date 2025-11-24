@@ -43,7 +43,7 @@ func (s *HandlerState) handleTopicTask(keyword string, topic string) {
 	}
 	client.Do(req)
 	handlerState.mu.Lock()
-	handlerState.tasks = append(handlerState.tasks, process)
+	handlerState.tasks[process.Id] = process
 	handlerState.mu.Unlock()
 
 }

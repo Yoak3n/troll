@@ -13,7 +13,7 @@ type Configuration struct {
 var Config *Configuration
 
 type Auth struct {
-	Cookie string
+	Cookie []string
 }
 
 func Init(dbPath string, dbName string) *Configuration {
@@ -26,7 +26,7 @@ func Init(dbPath string, dbName string) *Configuration {
 	}
 	for _, conf := range dbConfs {
 		if conf.Type == "cookie" {
-			config.Auth.Cookie = conf.Data
+			config.Auth.Cookie = append(config.Auth.Cookie, conf.Data)
 		}
 		if conf.Type == "proxy" {
 			config.Proxy = conf.Data

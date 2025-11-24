@@ -28,12 +28,12 @@ func ClientWithProxy() *http.Client {
 
 	return client
 }
-func GetRequestWithCookie(addr string) *http.Request {
+
+func GetRequestWithCookie(addr string, cookie string) *http.Request {
 	uri, err := url.Parse(addr)
 	if err != nil {
 		panic(err)
 	}
-	cookie := config.Config.Auth.Cookie
 	header := http.Header{
 		"Cookie": []string{cookie},
 		"User-Agent": []string{
@@ -52,9 +52,9 @@ func GetRequestWithCookie(addr string) *http.Request {
 	return req
 }
 
-func RequestGetWithAll(addr string) []byte {
+func RequestGetWithAll(addr string, cookie string) []byte {
 	client := ClientWithProxy()
-	req := GetRequestWithCookie(addr)
+	req := GetRequestWithCookie(addr, cookie)
 	if req == nil {
 		return nil
 	}

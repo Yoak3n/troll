@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,8 @@ import (
 
 	"github.com/Yoak3n/gulu/logger"
 	"github.com/Yoak3n/troll/scanner/controller"
+	"github.com/Yoak3n/troll/scanner/internal/config"
+	"github.com/Yoak3n/troll/scanner/internal/limiter"
 	"github.com/Yoak3n/troll/scanner/internal/util"
 	"github.com/Yoak3n/troll/scanner/model"
 	util2 "github.com/Yoak3n/troll/scanner/package/util"
@@ -19,6 +22,16 @@ import (
 const QueryUrl = "https://api.bilibili.com/x/v2/reply"
 const SubReplyUrl = "https://api.bilibili.com/x/v2/reply/reply"
 const LazilyLoadUrl = "https://api.bilibili.com/x/v2/reply/wbi/main"
+
+var accountLimiter *limiter.AccoutnLimiter
+
+func InitAccountLimiter() {
+	accountLimiter = limiter.NewAccountLimiter()
+	for i, cookie := range config.Config.Auth.Cookie {
+		id := uint(i + 1)
+		accountLimiter.SetAccount(id, cookie)
+	}
+}
 
 func NewVideoDataFromResponse(item model.SearchItem) *model.VideoData {
 	comments := LazilyGetAllComments(item.Aid)
@@ -66,9 +79,13 @@ func GetAllComments(avid uint) []model.CommentData {
 }
 
 func getComments(params map[string]string) ([]model.CommentData, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	accountID, cookie := accountLimiter.GetAccount(ctx)
+	defer cancel()
 	addr := util2.AppendParamsToUrl(QueryUrl, params)
-	resBuf := util.RequestGetWithAll(addr)
+	resBuf := util.RequestGetWithAll(addr, cookie)
 	if resBuf == nil {
+		accountLimiter.Penalize(accountID)
 		return nil, errors.New("query response returned empty string")
 	}
 	response := &model.CommentResponse{}
@@ -77,9 +94,10 @@ func getComments(params map[string]string) ([]model.CommentData, error) {
 		return nil, err
 	}
 	if response.Code != 0 {
+		accountLimiter.Penalize(accountID)
 		return nil, fmt.Errorf("response err: %s", response.Message)
 	}
-
+	accountLimiter.Reward(accountID)
 	comments := extractComments(response.Data.Replies, 0)
 	for i, v := range comments {
 		if v.NeedExpand && len(v.Children) > 0 {
@@ -164,10 +182,14 @@ func getCommentSubTree(comment *model.CommentData) *model.CommentData {
 			"pn":   strconv.Itoa(page),
 		}
 		uri := util2.AppendParamsToUrl(SubReplyUrl, params)
-		resBuf := util.RequestGetWithAll(uri)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		accountID, cookie := accountLimiter.GetAccount(ctx)
+		resBuf := util.RequestGetWithAll(uri, cookie)
+		cancel()
 		if resBuf == nil {
 			logger.Logger.Errorf("getCommentSubTree err: %v", errors.New("get sub comment response returned empty string"))
 			times += 1
+			accountLimiter.Penalize(accountID)
 			continue
 		}
 		response := &model.SubCommentResponse{}
@@ -175,14 +197,16 @@ func getCommentSubTree(comment *model.CommentData) *model.CommentData {
 		if err != nil {
 			logger.Logger.Errorf("getCommentSubTree err: %v", err)
 			times += 1
+			accountLimiter.Penalize(accountID)
 			continue
 		}
 		if response.Code != 0 {
 			logger.Logger.Warnf("getCommentSubTree err: %v", response.Message)
 			times += 1
+			accountLimiter.Penalize(accountID)
 			continue
 		}
-
+		accountLimiter.Reward(accountID)
 		if len(response.Data.Replies) < 1 {
 			logger.Logger.Printf("getCommentSubTree %d completed", comment.Rpid)
 			break
@@ -214,19 +238,23 @@ func LazilyGetAllComments(avid uint) []model.CommentData {
 			params["pagination_str"] = url.QueryEscape(fmt.Sprintf(`{"offset":"%s"}`, offset))
 		}
 		uri := util2.AppendParamsToUrl(LazilyLoadUrl, params)
-		resBuf := util.RequestGetWithAll(uri)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		accountID, cookie := accountLimiter.GetAccount(ctx)
+		resBuf := util.RequestGetWithAll(uri, cookie)
+		cancel()
 		response := &model.LazyCommentResponse{}
 		err := json.Unmarshal(resBuf, response)
 		if err != nil || response.Code != 0 {
 			logger.Logger.Errorf("LazilyGetAllComments err: %v %s", err, response.Message)
+			accountLimiter.Penalize(accountID)
 			continue
 		}
+		accountLimiter.Reward(accountID)
 		if response.Data.Cursor.IsEnd {
 			logger.Logger.Printf("LazilyGetAllComments %d cursor is end", avid)
 			break
 		}
 		if len(response.Data.Replies) < 1 {
-			logger.Logger.Warnln("LazilyGetAllComments replies is empty", response.Message)
 			break
 		}
 		currentComments := extractComments(response.Data.Replies, 0)
