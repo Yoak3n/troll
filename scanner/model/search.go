@@ -18,4 +18,5 @@ type SearchItem struct {
 	Aid         uint   `json:"aid"`
 	Bvid        string `json:"bvid"`
 	Description string `json:"description"`
+	Review      int    `json:"review"`
 }

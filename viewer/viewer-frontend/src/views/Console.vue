@@ -7,8 +7,8 @@
                     <n-button @click="showTaskModal = true">添加任务</n-button>
                 </n-space>
 
-                <n-list v-if="taskPool.length != 0">
-                    <n-list-item v-for="task in taskPool" :key="task.id">
+                <n-list v-if="taskPool.size != 0">
+                    <n-list-item v-for="task in taskPool.values()" :key="task.id">
                         <TaskProcessBar :task="task" />
                     </n-list-item>
                 </n-list>
@@ -77,6 +77,12 @@ const initWebSocket = () => {
             case "Ping":
                 pongHandle()
                 break
+            case "Processes":
+                const process = object.data
+                Object.keys(process).forEach((key) => {
+                    taskPool.value.set(key, process[key])
+                })
+                break
             case "Close":
                 closeConnection()
                 break
@@ -94,7 +100,7 @@ const initWebSocket = () => {
     };
 }
 const logsList = ref<LogItem[]>([])
-const taskPool = ref<TaskProcess[]>([])
+const taskPool = ref<Map<string,TaskProcess>>(new Map())
 
 const reconnectHandle = () => {
     let index = 0

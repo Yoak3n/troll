@@ -66,6 +66,7 @@ func (a *AccoutnLimiter) Penalize(id uint) {
 	defer a.mu.Unlock()
 	account := a.accounts[id]
 	account.Penalize()
+	a.accounts[id] = account
 }
 
 func (a *AccoutnLimiter) Reward(id uint) {
@@ -73,4 +74,5 @@ func (a *AccoutnLimiter) Reward(id uint) {
 	defer a.mu.Unlock()
 	account := a.accounts[id]
 	account.Reward()
+	a.accounts[id] = account
 }

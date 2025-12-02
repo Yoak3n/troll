@@ -8,6 +8,7 @@ type VideoData struct {
 	Description string        `json:"description"`
 	Owner       UserData      `json:"owner"`
 	Comments    []CommentData `json:"comments"`
+	Review      int           `json:"review"`
 }
 
 type VideoInfoResponse struct {
@@ -22,9 +23,15 @@ type VideoInfoData struct {
 	Pic         string         `json:"pic"`
 	Description string         `json:"desc"`
 	Owner       VideoInfoOwner `json:"owner"`
+	Stat        VideoInfoStat  `json:"stat"`
 }
 
 type VideoInfoOwner struct {
 	Mid  uint   `json:"mid"`
 	Name string `json:"name"`
+}
+
+type VideoInfoStat struct {
+	Reply uint `json:"reply"`
+	Like  uint `json:"like"`
 }

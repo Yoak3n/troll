@@ -7,8 +7,9 @@ import (
 )
 
 type ConfigurationTable struct {
-	Type string
-	Data string
+	Type    string
+	Data    string
+	Invalid bool `gorm:"default:false"`
 	gorm.Model
 }
 

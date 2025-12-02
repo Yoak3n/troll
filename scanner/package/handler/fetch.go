@@ -101,7 +101,6 @@ func getComments(params map[string]string) ([]model.CommentData, error) {
 	comments := extractComments(response.Data.Replies, 0)
 	for i, v := range comments {
 		if v.NeedExpand && len(v.Children) > 0 {
-			logger.Logger.Printf("getCommentSubTree %v", v)
 			comments[i] = *getCommentSubTree(&v)
 		}
 	}
@@ -208,7 +207,6 @@ func getCommentSubTree(comment *model.CommentData) *model.CommentData {
 		}
 		accountLimiter.Reward(accountID)
 		if len(response.Data.Replies) < 1 {
-			logger.Logger.Printf("getCommentSubTree %d completed", comment.Rpid)
 			break
 		}
 		replies := extractComments(response.Data.Replies, comment.Rpid)

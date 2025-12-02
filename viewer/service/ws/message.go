@@ -43,7 +43,7 @@ func NewLogDataToMessage(content string) *WebsocketMessage {
 
 type TaskProcessData struct {
 	Id        string `json:"id"`
-	Label     string `json:"lable"`
+	Label     string `json:"label"`
 	Total     int    `json:"total"`
 	Current   int    `json:"current"`
 	Completed bool   `json:"completed"`
@@ -73,7 +73,7 @@ type TaskData struct {
 	Type string
 	// 指定搜索关键词、视频BV
 	Data []string
-	// 指话题
+	// 指定话题
 	Topic string
 	// 指定搜索翻页页数,默认为1
 	Page int

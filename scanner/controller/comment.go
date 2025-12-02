@@ -148,7 +148,7 @@ func (d *Database) QueryConfigurationProxy() (*model.ConfigurationTable, error) 
 
 func (d *Database) QueryConfiguration() ([]model.ConfigurationTable, error) {
 	confs := make([]model.ConfigurationTable, 0)
-	err := d.db.Find(&confs).Error
+	err := d.db.Where("invalid = ?", false).Find(&confs).Error
 	return confs, err
 }
 

@@ -138,7 +138,6 @@ func (h *WebSocketHub) healthCheck(client *Client) {
 
 func (h *WebSocketHub) listen(id string, conn *websocket.Conn) {
 	defer func() {
-		log.Println("unlisten")
 		h.unregister <- id
 	}()
 	for {

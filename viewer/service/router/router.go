@@ -15,6 +15,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
+
+	handler2 "github.com/Yoak3n/troll/scanner/package/handler"
 )
 
 // 下划线开头的文件不能被直接嵌入，需要使用all
@@ -26,7 +28,8 @@ func InitRouter(port ...int) error {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
 	ws.InitWebsocketHub()
 	handler.InitHandlerState()
-	config.GetConfiguration()
+	// config.GetConfiguration()
+	handler2.Init(consts.TrollPath, "troll")
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
