@@ -11,9 +11,11 @@
 ## Usage
 
 ### Install
-```bash
-go install github.com/Yoak3n/troll/troll@latest
-```
+下载源码后使用`scripts`目录下的编译脚本（内嵌了网页文件）获得二进制程序，放在Path环境变量目录下
+
+`build.ps1`->Windows | `build.sh`->Linux
+
+
 安装cli工具成功后，帮助信息如下
 ```bash
 troll -h
@@ -26,7 +28,7 @@ USAGE:
    troll [global options] [command [command options]]
 
 VERSION:
-   0.0.1
+   0.3.0
 
 COMMANDS:
    fetch    fetch comments of a topic from bilibili
@@ -47,9 +49,8 @@ title即存放一批视频评论信息数据的目录，在cache目录下，在�
 
 
 ### Prepare
-首先参考`config.example.yaml`文件，准备一个`config.yaml`文件放在当前目录（使用cli工具时所在目录必须要有该文件）
-
-获取bilibili的cookie填写好cookie字段（必填）， 如果要使用代理可以填好系统代理的地址
+获取bilibili的cookie，使用【troll config --cookie】填写好cookie字段（必填），由于cookie字符串过长，请使用双引号包裹
+如果要使用代理可以填好系统代理的地址
 
 ### Fetch
 使用`fetch`子命令先获取巨魔活动的范围环境信息——单独视频或一个话题下多个视频的评论区
