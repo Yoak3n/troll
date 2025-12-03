@@ -30,7 +30,7 @@ func main() {
 	}
 	cmd := &cli.Command{
 		Name:    "troll",
-		Version: "0.2.5",
+		Version: "0.3.0",
 		Usage:   "search trolls from bilibili",
 		Commands: []*cli.Command{
 			fetchCommand(),
@@ -43,7 +43,7 @@ func main() {
 				Name:        "cache",
 				Value:       path.Join(TrollPath, "data/cache"),
 				Aliases:     []string{"C"},
-				Usage:       "cache path",
+				Usage:       "cache path(Deprecated)",
 				Destination: &cache,
 			},
 			&cli.StringFlag{

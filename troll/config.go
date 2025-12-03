@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Yoak3n/troll/scanner/controller"
 	"github.com/Yoak3n/troll/scanner/model"
 	"github.com/urfave/cli/v3"
+	"gorm.io/gorm"
 )
 
 type configArgs struct {
@@ -50,8 +52,21 @@ func setCookie(cookie string) error {
 }
 
 func setProxy(proxy string) error {
-	return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
-		Type: "proxy",
-		Data: proxy,
-	})
+	currentProxy, err := controller.GlobalDatabase().QueryConfigurationProxy()
+	if err != nil {
+		return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
+			Type: "proxy",
+			Data: proxy,
+		})
+	}
+	if currentProxy != nil {
+		return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
+			Model: gorm.Model{
+				ID: currentProxy.ID,
+			},
+			Type: "proxy",
+			Data: proxy,
+		})
+	}
+	return errors.New("set proxy failed")
 }
