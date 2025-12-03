@@ -126,6 +126,7 @@ func (s *HandlerState) setTaskCompleted(id string) {
 		handlerState.tasks[id] = process
 	}
 	handlerState.mu.Unlock()
+	s.Log(fmt.Sprintf("Task Completed %v", id))
 }
 
 func (s *HandlerState) handleVideoTask(bvid string, topic string) {

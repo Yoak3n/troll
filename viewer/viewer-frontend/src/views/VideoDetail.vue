@@ -86,7 +86,6 @@ onMounted(async () => {
     const avid = Number($route.query.avid);
     commentsData = await fetchCommentsByVideo(avid);
     currentVideoBvid.value = commentsData.bvid
-    console.log(currentVideoBvid.value);
     const pageQuery = Number($route.query.page)
     pageQuery ? page.value = pageQuery : page.value = 1
     length.value = commentsData.comments.length

@@ -50,6 +50,9 @@ func Init(dbPath string, dbName string) *Configuration {
 	}
 
 	Config = config
+	if len(config.Auth.Cookie) == 0 {
+		logger.Logger.Fatal("no valid cookie found")
+	}
 	return config
 }
 

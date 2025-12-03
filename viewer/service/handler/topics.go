@@ -18,6 +18,15 @@ func HandlerTopicsGet(c *fiber.Ctx) error {
 	return c.Send(buf)
 }
 
+func HandlerDashboardStatsGet(c *fiber.Ctx) error {
+	stats := controller.GlobalDatabase().GetDashboardStats()
+	buf, err := json.Marshal(stats)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	return c.Send(buf)
+}
+
 func HandlerTopicVideosGet(c *fiber.Ctx) error {
 	topicName := c.Params("topicName")
 	de, err := url.QueryUnescape(topicName)

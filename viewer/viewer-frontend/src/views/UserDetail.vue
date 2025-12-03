@@ -60,6 +60,8 @@ onMounted(async () => {
     comments.value = res
 
     $router.afterEach((to)=>{
+        console.log('user redirect to',to.name);
+        
         if (to.name == 'topic' && topicName){
             to.query.topicName = topicName
         }

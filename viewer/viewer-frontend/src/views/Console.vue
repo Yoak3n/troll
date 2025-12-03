@@ -1,40 +1,45 @@
 <template>
     <div class="console-wrapper">
-        状态 <n-badge :type="websocketStatus ? 'success' : 'error'" dot />
-        <div class="tasks-woker">
-            <n-card title="任务池">
-                <n-space>
-                    <n-button @click="showTaskModal = true">添加任务</n-button>
-                </n-space>
-
-                <n-list v-if="taskPool.size != 0">
-                    <n-list-item v-for="task in taskPool.values()" :key="task.id">
-                        <TaskProcessBar :task="task" />
-                    </n-list-item>
-                </n-list>
-            </n-card>
+        <div class="console-header">
+            状态 <n-badge :type="websocketStatus ? 'success' : 'error'" dot />
         </div>
-        <n-collapse arrow-placement="right" default-expanded-names="log" class="">
-            <n-collapse-item name="log">
-                <template #header>
-                    <h4>运行日志</h4>
-                </template>
-                <div class="log-box">
-                    <LogList :logs-list="logsList" />
-                </div>
-            </n-collapse-item>
-        </n-collapse>
+        <div class="console-body">
+            <div class="tasks-woker">
+                <n-card title="任务池">
+                    <template #header-extra>
+                        <n-button @click="showTaskModal = true">添加任务</n-button>
+                    </template>
+
+                    <n-list v-if="taskPool.size != 0">
+                        <n-list-item v-for="task in taskPool.values()" :key="task.id">
+                            <TaskProcessBar :task="task" />
+                        </n-list-item>
+                    </n-list>
+                </n-card>
+            </div>
+            <n-collapse arrow-placement="right" default-expanded-names="log" class="">
+                <n-collapse-item name="log">
+                    <template #header>
+                        <h4>运行日志</h4>
+                    </template>
+                    <div class="log-box">
+                        <LogList :logs-list="logsList" />
+                    </div>
+                </n-collapse-item>
+            </n-collapse>
+        </div>
+
 
     </div>
-            <n-modal v-model:show="showTaskModal">
-            <TaskModal :submit-task-form="uploadTaskData"/>
-        </n-modal>
+    <n-modal v-model:show="showTaskModal">
+        <TaskModal :submit-task-form="uploadTaskData" />
+    </n-modal>
 </template>
 
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
-import { NCollapse, NCollapseItem, NBadge, NCard, NList, NListItem, NSpace, NButton,NModal } from 'naive-ui';
+import { NCollapse, NCollapseItem, NBadge, NCard, NList, NListItem, NButton, NModal } from 'naive-ui';
 import type { LogItem, TaskForm, TaskProcess, WsMessage } from '../types';
 import LogList from '../components/LogList/index.vue'
 import TaskProcessBar from '../components/Task/index.vue'
@@ -50,6 +55,7 @@ let reconnectTimer: number | undefined
 let toClose = false
 const initWebSocket = () => {
     //初始化weosocket
+    clientId = random(1, 1000).toString()
     const wsuri = import.meta.env.VITE_APP_BASE_API + "/ws/" + clientId; //ws地址
     $websocket.value = new WebSocket(wsuri);
     $websocket.value.onopen = () => {
@@ -100,7 +106,7 @@ const initWebSocket = () => {
     };
 }
 const logsList = ref<LogItem[]>([])
-const taskPool = ref<Map<string,TaskProcess>>(new Map())
+const taskPool = ref<Map<string, TaskProcess>>(new Map())
 
 const reconnectHandle = () => {
     let index = 0
@@ -141,7 +147,6 @@ const closeConnection = () => {
     $websocket.value = null
 }
 onMounted(() => {
-    clientId = random(1, 1000).toString()
     initWebSocket()
 })
 onUnmounted(() => {
@@ -150,18 +155,34 @@ onUnmounted(() => {
     clearInterval(reconnectTimer)
 })
 
-const uploadTaskData = (task:TaskForm)=>{
-    const taskMessage:WsMessage = {
+const uploadTaskData = (task: TaskForm) => {
+    const taskMessage: WsMessage = {
         action: 'Task',
         data: task
     }
     $websocket.value?.send(JSON.stringify(taskMessage))
+    showTaskModal.value = false
 }
 
 </script>
 
 <style scoped lang="less">
 .console-wrapper {
+    display: flex;
+    flex-direction: column;
     margin: 1rem;
+
+    .console-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        padding: .5rem 2rem;
+    }
+
+    .console-body {
+        display: flex;
+        flex-direction: column;
+    }
 }
 </style>

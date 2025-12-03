@@ -14,14 +14,7 @@ const routes: RouteRecordRaw[] = [
                             {
                                 path: "topic", name: "topic", component: () => import("../views/TopicDetail.vue"), children: [
                                     { path: "video", name: "video", component: () => import("../views/VideoDetail.vue")}
-                                ], beforeEnter: (to) => {
-                                    const topic = to.query.topicName as string | undefined
-                                    if (topic) {
-                                        return true
-                                    } else {
-                                        return { name: 'topics' }
-                                    }
-                                }
+                                ]
                             }
                         ]
                     },

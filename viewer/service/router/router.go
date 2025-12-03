@@ -47,14 +47,6 @@ func InitRouter(port ...int) error {
 		Index:  "index.html", // 默认文件
 		MaxAge: 3600,         // 缓存时间
 	}))
-	// app.Static("/", "./service/router/dist", fiber.Static{
-	// 	Compress:      true,
-	// 	ByteRange:     true,
-	// 	Browse:        true,
-	// 	Index:         "index.html",
-	// 	CacheDuration: 10 * time.Second,
-	// 	MaxAge:        3600,
-	// })
 	if len(port) > 0 {
 		app.Listen(fmt.Sprintf(":%d", port[0]))
 	} else {
@@ -118,6 +110,7 @@ func setupRoutes(app *fiber.App) {
 	setupSearchRoutes(v1)
 	setupSettingRoutes(v1)
 	setupCommentRoutes(v1)
+	setupStatisticsRoutes(v1)
 }
 
 func setupTopicsRoutes(group fiber.Router) {
@@ -151,4 +144,9 @@ func setupSettingRoutes(group fiber.Router) {
 func setupCommentRoutes(group fiber.Router) {
 	comments := group.Group("/comments").Name("comments.")
 	comments.Get("/search", handler.HandleCommentSearchWithKeyword).Name("search")
+}
+
+func setupStatisticsRoutes(group fiber.Router) {
+	stats := group.Group("/statistics").Name("statistics.")
+	stats.Get("/", handler.HandlerDashboardStatsGet).Name("dashboard")
 }

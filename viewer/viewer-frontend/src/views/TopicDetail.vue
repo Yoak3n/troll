@@ -38,10 +38,15 @@ import { EllipsisText } from '../utils/name/show';
 const $route = useRoute();
 const topicName = ref<string>('');
 const videos = ref<Array<VideoDataWithCommentsCount>>([]);
+const isLoading = ref<boolean>(false);
 onMounted(async () => {
     const topic = $route.query.topicName as string;
     topicName.value = topic
+    isLoading.value = true
+    window.$loadingBar?.start()
     const ret = await fetchVideosByTopic(topicName.value);
+    window.$loadingBar?.finish()
+    isLoading.value = false
     videos.value = ret;
 });
 

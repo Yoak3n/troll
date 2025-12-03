@@ -1,41 +1,18 @@
 <script lang="ts" setup>
-import { h, ref,onMounted, type Component } from 'vue';
+import { h, ref,onMounted } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { NLayout, NLayoutSider, NLayoutContent, NMenu, type MenuOption, NIcon } from 'naive-ui';
 import {
-    ChatbubbleEllipsesOutline,
     CaretDownOutline,
-    CaretForwardCircleSharp,
-    HomeOutline,
-    PersonOutline,
-    BowlingBallOutline,
-    CogOutline,
-    HeartOutline
 } from '@vicons/ionicons5'
+import { routerNameToMenuOptionMap } from '../assets/map'
+import { MenuOptions } from '../assets/option/MenuOption'
 
-
-
-const MenuOptions: MenuOption[] = [
-    {
-        label: '首页', key: 'home', icon: renderIcon(HomeOutline), children: [
-            { label: '话题列表', key: 'topics', icon: renderIcon(ChatbubbleEllipsesOutline) },
-            { label: '视频列表', key: 'videos', icon: renderIcon(CaretForwardCircleSharp) },
-            { label: '用户查询', key: 'users', icon: renderIcon(PersonOutline) }
-        ]
-    },
-    { label: '控制台', key: 'console', icon: renderIcon(BowlingBallOutline) },
-    { label: '设置', key: 'setting', icon: renderIcon(CogOutline) },
-    { label: '关于', key: "about", icon: renderIcon(HeartOutline) }
-];
 const $route = useRoute()
 const $router = useRouter()
 const collapsed = ref(true)
 const activatedKey = ref('home')
 
-const routerNameToMenuOptionMap: Map<string,string> = new Map<string,string>([
-    ['user-search','users'],
-    ['user','users']
-])
 
 onMounted(() => {
     const routeName = $route.name as string
@@ -49,9 +26,6 @@ onMounted(() => {
 const UpdateActivatedKey = (name:string)=>{
     activatedKey.value = routerNameToMenuOptionMap.has(name) ? routerNameToMenuOptionMap.get(name)!: name
 }
-
-
-
 function renderMenuLabel(option: MenuOption) {
     return h(
         RouterLink,
@@ -62,10 +36,6 @@ function renderMenuLabel(option: MenuOption) {
         },
         {default: () => option.label }
     )
-}
-
-function renderIcon(icon: Component) {
-    return () => h(NIcon, null, { default: () => h(icon) })
 }
 
 function expandIcon() {
