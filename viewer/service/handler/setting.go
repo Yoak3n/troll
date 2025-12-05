@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"github.com/Yoak3n/troll/scanner/package/handler"
 	"github.com/Yoak3n/troll/viewer/config"
+	"github.com/Yoak3n/troll/viewer/consts"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -19,5 +21,6 @@ func HandlerSettingUpdate(c *fiber.Ctx) error {
 		})
 	}
 	config.UpdateAllConfiguration(conf)
+	handler.Init(consts.TrollPath, "troll")
 	return c.Status(fiber.StatusOK).JSON(nil)
 }

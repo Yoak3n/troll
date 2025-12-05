@@ -15,6 +15,7 @@ type HandlerState struct {
 	mu      sync.RWMutex
 	wg      sync.WaitGroup
 	logChan chan ws.LogMessageData
+	queue   chan string
 }
 
 func InitHandlerState() {
@@ -23,6 +24,7 @@ func InitHandlerState() {
 		mu:      sync.RWMutex{},
 		wg:      sync.WaitGroup{},
 		logChan: make(chan ws.LogMessageData, 100),
+		queue:   make(chan string, 100),
 	}
 	go handlerState.HandleTask()
 	go handlerState.sendLog()

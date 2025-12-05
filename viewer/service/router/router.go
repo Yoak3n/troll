@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/Yoak3n/troll/viewer/config"
 	"github.com/Yoak3n/troll/viewer/consts"
 	"github.com/Yoak3n/troll/viewer/service/controller"
 	"github.com/Yoak3n/troll/viewer/service/handler"
@@ -24,13 +23,18 @@ import (
 //go:embed all:dist/*
 var embeddedFiles embed.FS
 
-func InitRouter(port ...int) error {
+func initAppServices() {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
 	ws.InitWebsocketHub()
 	handler.InitHandlerState()
-	// config.GetConfiguration()
 	handler2.Init(consts.TrollPath, "troll")
-	app := fiber.New()
+}
+
+func InitSingleViewApp(port ...int) error {
+	initAppServices()
+	app := fiber.New(fiber.Config{
+		AppName: "troll",
+	})
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "*",
@@ -43,7 +47,7 @@ func InitRouter(port ...int) error {
 	setupRoutes(app)
 	app.Use("/", filesystem.New(filesystem.Config{
 		Root:   http.FS(subFS),
-		Browse: true,         // 禁用目录浏览
+		Browse: false,        // 禁用目录浏览
 		Index:  "index.html", // 默认文件
 		MaxAge: 3600,         // 缓存时间
 	}))
@@ -57,11 +61,10 @@ func InitRouter(port ...int) error {
 }
 
 func InitViewCommandApp(files fs.FS, port int) error {
-	controller.GlobalDatabase(consts.TrollPath, "troll")
-	ws.InitWebsocketHub()
-	handler.InitHandlerState()
-	config.GetConfiguration()
-	app := fiber.New()
+	initAppServices()
+	app := fiber.New(fiber.Config{
+		AppName: "troll",
+	})
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "*",

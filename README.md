@@ -15,6 +15,7 @@
 
 `build.ps1`->Windows | `build.sh`->Linux
 
+或从[Release](https://github.com/Yoak3n/troll/releases)直接下载
 
 安装cli工具成功后，帮助信息如下
 ```bash

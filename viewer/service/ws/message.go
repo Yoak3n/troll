@@ -47,6 +47,7 @@ type TaskProcessData struct {
 	Total     int    `json:"total"`
 	Current   int    `json:"current"`
 	Completed bool   `json:"completed"`
+	Topic     string
 }
 
 func NewTaskProcessData(id string, label string, total int, current int, completed bool) TaskProcessData {
@@ -56,6 +57,7 @@ func NewTaskProcessData(id string, label string, total int, current int, complet
 		Total:     total,
 		Current:   current,
 		Completed: completed,
+		Topic:     "",
 	}
 }
 

@@ -9,24 +9,28 @@ import (
 )
 
 func (s *HandlerState) HandleTask() {
-	for {
-		select {
-		case task := <-ws.Hub.Tasks:
-			s.handleSingleTask(&task)
-		}
+	for i := range 3 {
+		go s.worker(i + 1)
+	}
+	for task := range ws.Hub.Tasks {
+		s.handleSingleTask(&task)
 	}
 }
 
 func (s *HandlerState) handleSingleTask(task *ws.TaskData) {
-	s.Log(fmt.Sprintf("handleSingleTask %v", task))
+	// s.Log(fmt.Sprintf("handleSingleTask %v", task))
+	topic := task.Topic
+	if topic == "" {
+		topic = "未分类"
+	}
 	switch task.Type {
 	case "topic":
 		for _, keyword := range task.Data {
-			s.handleTopicTask(keyword, task.Topic, task.Page)
+			s.handleTopicTask(keyword, topic, task.Page)
 		}
 	case "video":
 		for _, d := range task.Data {
-			s.handleVideoTask(d, task.Topic)
+			s.handleVideoTask(d, topic)
 		}
 	}
 }
@@ -47,34 +51,58 @@ func (s *HandlerState) handleTopicTask(keyword string, topic string, page int) {
 			Id:        video.Bvid,
 			Label:     video.Title,
 			Total:     video.Review,
+			Topic:     topic,
 			Current:   0,
 			Completed: false,
 		}
 		handlerState.mu.Lock()
 		handlerState.tasks[process.Id] = process
 		handlerState.mu.Unlock()
-		go s.taskProcess(video.Bvid, topic)
+		go s.taskProcess(video.Bvid)
 	}
-
 }
 
-func (s *HandlerState) taskProcess(id string, topic string) {
-	handlerState.mu.RLock()
-	process, ok := handlerState.tasks[id]
-	handlerState.mu.RUnlock()
-	if !ok {
-		s.setTaskCompleted(id)
-		return
-	}
-	videoInfo := handler.FetchVideoInfo(process.Id, topic)
-	if videoInfo.Review == 0 {
-		s.setTaskCompleted(id)
-		return
-	}
-	comments := s.fetchVideoComments(id, uint(videoInfo.Avid))
-	if comments == nil {
-		s.setTaskCompleted(id)
-		return
+func (s *HandlerState) taskProcess(id string) {
+	s.queue <- id
+	// handlerState.mu.RLock()
+	// process, ok := handlerState.tasks[id]
+	// handlerState.mu.RUnlock()
+	// if !ok {
+	// 	s.setTaskCompleted(id)
+	// 	return
+	// }
+	// videoInfo := handler.FetchVideoInfo(process.Id, topic)
+	// if videoInfo.Review == 0 {
+	// 	s.setTaskCompleted(id)
+	// 	return
+	// }
+	// comments := s.fetchVideoComments(id, uint(videoInfo.Avid))
+	// if comments == nil {
+	// 	s.setTaskCompleted(id)
+	// 	return
+	// }
+}
+
+func (s *HandlerState) worker(num int) {
+	for {
+		taskId := <-s.queue
+		handlerState.mu.RLock()
+		process, ok := handlerState.tasks[taskId]
+		handlerState.mu.RUnlock()
+		if !ok {
+			continue
+		}
+		s.Log(fmt.Sprintf("Worker %d is working out task %s", num, process.Id))
+		videoInfo := handler.FetchVideoInfo(process.Id, process.Topic)
+		if videoInfo.Review == 0 {
+			s.setTaskCompleted(taskId)
+			return
+		}
+		comments := s.fetchVideoComments(taskId, uint(videoInfo.Avid))
+		if comments == nil {
+			s.setTaskCompleted(taskId)
+			return
+		}
 	}
 }
 
@@ -143,9 +171,10 @@ func (s *HandlerState) handleVideoTask(bvid string, topic string) {
 		Total:     videoInfo.Review,
 		Current:   0,
 		Completed: false,
+		Topic:     topic,
 	}
 	handlerState.mu.Lock()
 	handlerState.tasks[process.Id] = process
 	handlerState.mu.Unlock()
-	go s.taskProcess(bvid, topic)
+	go s.taskProcess(bvid)
 }

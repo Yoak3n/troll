@@ -7,6 +7,5 @@ const API = {
 
 export const fetchCommentsByKeyword = (keyword: string) => {
     const uri = API.SEARCH_KEYWORD + '?keyword=' + encodeURIComponent(keyword);
-    console.log(uri);
     return request.get<any, CommentView>(uri);
 }
