@@ -46,7 +46,7 @@ func (d *Database) GetVideoByAvid(avid uint) VideoData {
 	SELECT v.*,u.*
 	FROM video_tables v 
 	INNER JOIN user_tables u ON v.owner = u.uid
-	WHERE v.avid = ?
+	WHERE v.avid = ? AND v.deleted_at IS NULL
 	`
 	if err := d.db.Raw(query, avid).Scan(&videoDataQuery).Error; err != nil {
 		return VideoData{}
@@ -72,8 +72,8 @@ func (d *Database) GetVideosByTopic(topicName string) []VideoDataWithCommentsCou
 	result := make([]VideoDataQuery, 0)
 	query := `
 	SELECT v.*,u.*, Count(c.comment_id) AS count
-	FROM comment_tables c INNER JOIN video_tables v ON c.video_avid = v.avid LEFT  JOIN user_tables u ON v.owner = u.uid
-	WHERE v.topic = ?
+	FROM comment_tables c INNER JOIN video_tables v ON c.video_avid = v.avid LEFT JOIN user_tables u ON v.owner = u.uid
+	WHERE v.topic = ? AND v.deleted_at IS NULL
 	GROUP BY v.avid, u.uid;`
 	if err := d.db.Raw(query, topicName).Scan(&result).Error; err != nil {
 		return nil
@@ -161,4 +161,16 @@ func (d *Database) GetVideosByTopic(topicName string) []VideoDataWithCommentsCou
 
 func (d *Database) UpdateTopicOfVideos(avid []uint, topic string) error {
 	return d.db.Model(&model.VideoTable{}).Where("avid IN ?", avid).Update("topic", topic).Error
+}
+
+func (d *Database) DeleteVideos(avidList []uint) error {
+	err := d.db.Where("avid IN ?", avidList).Delete(&model.VideoTable{}).Error
+	if err != nil {
+		return err
+	}
+	err = d.db.Where("video_avid IN ?", avidList).Delete(&model.CommentTable{}).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     rolldownOptions: {
         output: {
-            dir: '../service/router/dist',
+            dir: '../service/app/dist',
             entryFileNames: 'static/js/[name]-[hash].js',
             chunkFileNames: 'static/js/[name]-[hash].js',
             assetFileNames: 'static/[ext]/[name]-[hash].[ext]'

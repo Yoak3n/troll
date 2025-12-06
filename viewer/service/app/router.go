@@ -1,7 +1,6 @@
 package app
 
 import (
-	"embed"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -18,10 +17,7 @@ import (
 	handler2 "github.com/Yoak3n/troll/scanner/package/handler"
 )
 
-// 下划线开头的文件不能被直接嵌入，需要使用all
-//
-//go:embed all:dist/*
-var embeddedFiles embed.FS
+
 
 func initServices() {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
@@ -97,6 +93,7 @@ func setupVideosRoutes(group fiber.Router) {
 	videos := group.Group("/videos")
 	videos.Get("/:avid/comments", handler.HandlerVideoCommentsGet).Name("comments")
 	videos.Post("/topic", handler.HandlerVideoTopicPost).Name("topic")
+	videos.Delete("/", handler.HandlerVideosDelete).Name("delete")
 }
 
 func setupUserRoutes(group fiber.Router) {

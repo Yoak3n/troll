@@ -8,3 +8,7 @@ type UpdateTopicRequest struct {
 	Topic    string `json:"topic"`
 	NewTopic string `json:"new_topic"`
 }
+
+type VideoDeleteRequest struct {
+	AVIDList []uint `json:"avidList"`
+}

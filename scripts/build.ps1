@@ -20,7 +20,7 @@ $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = (Resolve-Path (Join-Path $ScriptRoot '..')).Path
 
 $FrontendDir = Join-Path $RepoRoot 'viewer\viewer-frontend'
-$RouterDistDir = Join-Path $RepoRoot 'viewer\service\router\dist'
+$RouterDistDir = Join-Path $RepoRoot 'viewer\service\app\dist'
 $TrollDistDir = Join-Path $RepoRoot 'troll\dist'
 
 Write-Host "[1/4] Building frontend (viewer/viewer-frontend)" -ForegroundColor Cyan

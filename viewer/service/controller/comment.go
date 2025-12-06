@@ -25,7 +25,7 @@ func (d *Database) GetCommentsByVideo(avid uint) CommentGroupByVideo {
 	SELECT c.*,u.*
 	FROM comment_tables c
 	INNER JOIN user_tables u ON c.owner = u.uid
-	WHERE c.video_avid = ?  AND c.parent_comment = 0`
+	WHERE c.video_avid = ?  AND c.parent_comment = 0 AND c.deleted_at IS NULL`
 	rootQuery := make([]CommentQuery, 0)
 	if err := d.db.Raw(query1, avid).Scan(&rootQuery).Error; err != nil {
 		return CommentGroupByVideo{}
@@ -34,7 +34,7 @@ func (d *Database) GetCommentsByVideo(avid uint) CommentGroupByVideo {
 	SELECT c.*, u.*
 	FROM comment_tables c
 	INNER JOIN user_tables u ON c.owner = u.uid
-	WHERE c.video_avid = ?  AND c.parent_comment != 0`
+	WHERE c.video_avid = ?  AND c.parent_comment != 0 AND c.deleted_at IS NULL`
 	subQuery := make([]CommentQuery, 0)
 	if err := d.db.Raw(query2, avid).Scan(&subQuery).Error; err != nil {
 		return CommentGroupByVideo{}
@@ -86,7 +86,7 @@ func (d *Database) SearchCommentWithKeyword(keyword string) []CommentData {
 	SELECT c.*,u.*
 	FROM comment_tables c
 	INNER JOIN user_tables u ON c.owner = u.uid
-	WHERE c.text LIKE ?`
+	WHERE c.text LIKE ? AND c.deleted_at IS NULL`
 	result := make([]CommentQuery, 0)
 	if err := d.db.Raw(query, "%"+keyword+"%").Scan(&result).Error; err != nil {
 		return nil

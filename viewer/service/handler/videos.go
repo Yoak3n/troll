@@ -52,3 +52,22 @@ func HandlerVideoTopicPost(c *fiber.Ctx) error {
 		"message": "topic updated",
 	})
 }
+
+func HandlerVideosDelete(c *fiber.Ctx) error {
+	req := &model.VideoDeleteRequest{}
+	err := c.BodyParser(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "invalid request body",
+		})
+	}
+	err = controller.GlobalDatabase().DeleteVideos(req.AVIDList)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "failed to delete videos",
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "videos deleted",
+	})
+}

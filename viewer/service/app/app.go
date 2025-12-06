@@ -1,8 +1,14 @@
 package app
 
 import (
+	"embed"
 	"io/fs"
 )
+
+// 下划线开头的文件不能被直接嵌入，需要使用all
+//
+//go:embed all:dist/*
+var embeddedFiles embed.FS
 
 func InitSingleViewApp(port ...int) error {
 	initServices()

@@ -4,7 +4,7 @@ set -euo pipefail
 # Build script for Linux/macOS (bash)
 # Steps:
 # 1) Build frontend in viewer/viewer-frontend
-# 2) Ensure output is placed in viewer/service/router/dist, also copy to troll/dist
+# 2) Ensure output is placed in viewer/service/app/dist, also copy to troll/dist
 # 3) Build viewer cmd program (outputs viewer)
 # 4) Build troll main program (outputs troll)
 
@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 FRONTEND_DIR="$REPO_ROOT/viewer/viewer-frontend"
-ROUTER_DIST_DIR="$REPO_ROOT/viewer/service/router/dist"
+ROUTER_DIST_DIR="$REPO_ROOT/viewer/service/app/dist"
 TROLL_DIST_DIR="$REPO_ROOT/troll/dist"
 
 echo "[1/4] Building frontend (viewer/viewer-frontend)"
@@ -32,7 +32,7 @@ else
 fi
 popd >/dev/null
 
-echo "[2/4] Sync dist to viewer/service/router and troll/dist"
+echo "[2/4] Sync dist to viewer/service/app and troll/dist"
 
 mkdir -p "$ROUTER_DIST_DIR"
 

@@ -20,7 +20,6 @@ interface Props {
     topicName: string
 }
 
-
 const $mitt = mitt()
 
 const $router = useRouter()
