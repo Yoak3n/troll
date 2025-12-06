@@ -56,7 +56,7 @@ import {
     NSelect,
     NButtonGroup,
     NButton,
-    NInputGroup, NInputGroupLabel, NInput, NInputNumber,
+    NInputGroup, NInput, NInputNumber,
     NIcon
 } from 'naive-ui';
 import type { SelectOption } from 'naive-ui';
