@@ -158,3 +158,7 @@ func (d *Database) GetVideosByTopic(topicName string) []VideoDataWithCommentsCou
 
 	return ret
 }
+
+func (d *Database) UpdateTopicOfVideos(avid []uint, topic string) error {
+	return d.db.Model(&model.VideoTable{}).Where("avid IN ?", avid).Update("topic", topic).Error
+}

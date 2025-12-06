@@ -30,13 +30,7 @@ func GlobalDatabase(args ...string) *Database {
 	return DB
 }
 
-func (d *Database) AddVideoRecord(video model.VideoTable) error {
-	return d.db.Save(&video).Error
-}
 
-func (d *Database) QueryVideoRecord(video model.VideoTable) (*model.VideoTable, error) {
-	return &video, d.db.First(&video).Error
-}
 
 func (d *Database) AddCommentRecord(comments []model.CommentTable) error {
 	if len(comments) == 0 {
@@ -61,28 +55,7 @@ func (d *Database) QueryUserCommentList(user model.UserTable) ([]model.CommentTa
 	return ret, err
 }
 
-func (d *Database) QueryTopNUserInTopic(topic string, n int) ([]model.UserQuery, error) {
-	var ret []model.UserQuery
-	query := `
-	SELECT
-		u.*,
-		COUNT(c.comment_id) AS count
-	FROM
-		user_tables u
-		INNER JOIN
-		comment_tables c ON u.uid = c.owner
-		INNER JOIN
-		video_tables v ON c.video_avid = v.avid
-	WHERE
-		v.topic = ?
-	GROUP BY
-		u.uid
-	ORDER BY
-	    count DESC
-	LIMIT ?;`
-	err := d.db.Raw(query, topic, n).Scan(&ret).Error
-	return ret, err
-}
+
 
 func (d *Database) AddUserRecord(users []model.UserTable) error {
 	if len(users) == 0 {
@@ -130,28 +103,4 @@ func (d *Database) QuerySimilarComments(topic string, n int) ([]model.SimilarCom
 	return comments, nil
 }
 
-func (d *Database) QueryConfigurationCookie() (*model.ConfigurationTable, error) {
-	c := &model.ConfigurationTable{
-		Type: "cookie",
-	}
-	err := d.db.First(c).Error
-	return c, err
-}
 
-func (d *Database) QueryConfigurationProxy() (*model.ConfigurationTable, error) {
-	c := &model.ConfigurationTable{
-		Type: "proxy",
-	}
-	err := d.db.First(c).Error
-	return c, err
-}
-
-func (d *Database) QueryConfiguration() ([]model.ConfigurationTable, error) {
-	confs := make([]model.ConfigurationTable, 0)
-	err := d.db.Where("invalid = ?", false).Find(&confs).Error
-	return confs, err
-}
-
-func (d *Database) UpdateConfiguration(c *model.ConfigurationTable) error {
-	return d.db.Save(c).Error
-}

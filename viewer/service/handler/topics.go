@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/Yoak3n/troll/viewer/service/controller"
+	"github.com/Yoak3n/troll/viewer/service/model"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -40,4 +41,32 @@ func HandlerTopicVideosGet(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
 	}
 	return c.Send(buf)
+}
+
+func HandlerTopicUpdate(c *fiber.Ctx) error {
+	var req model.UpdateTopicRequest
+	err := c.BodyParser(&req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Bad Request")
+	}
+	db := controller.GlobalDatabase()
+	err = db.UpdateTopic(req.Topic, req.NewTopic)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	return c.SendString("OK")
+}
+
+func HandlerTopicDelete(c *fiber.Ctx) error {
+	topicName := c.Params("topicName")
+	de, err := url.QueryUnescape(topicName)
+	if err == nil {
+		topicName = de
+	}
+	db := controller.GlobalDatabase()
+	err = db.DeleteTopic(topicName)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+	}
+	return c.SendString("OK")
 }

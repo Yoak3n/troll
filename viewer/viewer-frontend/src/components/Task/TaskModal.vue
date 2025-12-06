@@ -11,7 +11,6 @@
                             :label="`${formData.type == 'topic' ? '关键词' : '视频号(BV)'}${formData.data.length > 1 ? index + 1 : ''}`"
                             :key="index">
                             <n-input-group>
-                                <n-input-group-label v-if="formData.type == 'video'">BV1</n-input-group-label>
                                 <n-input v-model:value="formData.data[index]" clearable
                                     :placeholder="formData.type == 'topic' ? '请输入搜索视频的关键词' : '请输入视频的BV号'" />
                             </n-input-group>

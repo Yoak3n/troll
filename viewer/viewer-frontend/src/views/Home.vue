@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { NBreadcrumb, NBreadcrumbItem, NCard, NStatistic, NSpace,NDivider } from "naive-ui"
 import { fetchDashboardStats, type DashboardStats } from "../api"
+import { useAppStore } from "../store/modules/app"
+import Guidance from "../components/Guidance/index.vue"
 const $route = useRoute();
 const pathStr = computed(() => {
     const hasQuery = $route.fullPath.includes("?");
@@ -12,6 +14,7 @@ const pathStr = computed(() => {
         return $route.fullPath.split("/").filter(i => decodeURI(i)).slice(1);
     }
 });
+const appStore = useAppStore()
 let stats = ref<DashboardStats>({
     topics: 0,
     videos: 0,
@@ -30,7 +33,7 @@ const RouterNameMap = new Map<string,string>([
     ['user-search','用户搜索']
 ]);
 onMounted(async () => {
-    console.log('Current path segments:', pathStr.value);
+    appStore.initGuidanceFinished()
     stats.value = await fetchDashboardStats()
 });
 
@@ -51,6 +54,9 @@ onMounted(async () => {
         </n-breadcrumb>
         <n-divider />
         <div class="home-dashboard" v-if="$route.name == 'home'">
+            <n-card title="使用引导" closable v-if="!appStore.getGuidanceFinished()" @close="appStore.setGuidanceFinished(true)" embedded>
+                <Guidance :next-step="appStore.incrementGuidanceIndex" :active-step="appStore.getGuidanceIndex()" />
+            </n-card>
             <n-card title="统计信息">
                 <n-space>
                     <n-statistic label="话题总数" :value="stats.topics" />

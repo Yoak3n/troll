@@ -1,4 +1,4 @@
-package router
+package app
 
 import (
 	"embed"
@@ -19,51 +19,20 @@ import (
 )
 
 // 下划线开头的文件不能被直接嵌入，需要使用all
-
+//
 //go:embed all:dist/*
 var embeddedFiles embed.FS
 
-func initAppServices() {
+func initServices() {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
 	ws.InitWebsocketHub()
 	handler.InitHandlerState()
 	handler2.Init(consts.TrollPath, "troll")
 }
 
-func InitSingleViewApp(port ...int) error {
-	initAppServices()
+func initRouter(files fs.FS, port int) error {
 	app := fiber.New(fiber.Config{
-		AppName: "troll",
-	})
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "*",
-		AllowMethods: "*",
-	}))
-	subFS, err := fs.Sub(embeddedFiles, "dist")
-	if err != nil {
-		return err
-	}
-	setupRoutes(app)
-	app.Use("/", filesystem.New(filesystem.Config{
-		Root:   http.FS(subFS),
-		Browse: false,        // 禁用目录浏览
-		Index:  "index.html", // 默认文件
-		MaxAge: 3600,         // 缓存时间
-	}))
-	if len(port) > 0 {
-		app.Listen(fmt.Sprintf(":%d", port[0]))
-	} else {
-		app.Listen(":10420")
-	}
-
-	return nil
-}
-
-func InitViewCommandApp(files fs.FS, port int) error {
-	initAppServices()
-	app := fiber.New(fiber.Config{
-		AppName: "troll",
+		AppName: "Troll Viewer",
 	})
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -120,11 +89,14 @@ func setupTopicsRoutes(group fiber.Router) {
 	topics := group.Group("/topics")
 	topics.Get("/list", handler.HandlerTopicsGet).Name("list")
 	topics.Get("/:topicName/videos", handler.HandlerTopicVideosGet).Name("videos")
+	topics.Post("/update", handler.HandlerTopicUpdate).Name("update")
+	topics.Delete("/:topicName", handler.HandlerTopicDelete).Name("delete")
 }
 
 func setupVideosRoutes(group fiber.Router) {
 	videos := group.Group("/videos")
 	videos.Get("/:avid/comments", handler.HandlerVideoCommentsGet).Name("comments")
+	videos.Post("/topic", handler.HandlerVideoTopicPost).Name("topic")
 }
 
 func setupUserRoutes(group fiber.Router) {

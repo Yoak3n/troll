@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Yoak3n/troll/viewer/service/app"
 	"github.com/Yoak3n/troll/scanner/package/util"
-	"github.com/Yoak3n/troll/viewer/service/router"
 	"github.com/urfave/cli/v3"
 )
 
@@ -43,7 +43,7 @@ func viewCommand() *cli.Command {
 func runRouter(port int) error {
 	wg := sync.WaitGroup{}
 	wg.Go(func() {
-		router.InitViewCommandApp(embeddedFiles, port)
+		app.InitViewCommandApp(embeddedFiles, port)
 	})
 	util.OpenUrlOnBrowser(fmt.Sprintf("http://localhost:%d", port))
 	wg.Wait()

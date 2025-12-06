@@ -16,3 +16,8 @@ export interface VideoDataGroupyByTopic{
     topic: string
     videos: VideoData[]
 }
+
+export interface TopicUpdateRequest{
+    avid: number[]
+    topic: string
+}

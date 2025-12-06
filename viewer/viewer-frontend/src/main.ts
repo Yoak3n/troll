@@ -5,6 +5,8 @@ import router from './router'
 
 const app = createApp(App)
 app.use(router)
+import pinia from './store'
+app.use(pinia)
 
 app.mount('#app')
 

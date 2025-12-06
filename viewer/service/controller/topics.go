@@ -49,3 +49,24 @@ func (d *Database) GetDashboardStats() DashboardStats {
 		Comments: comments,
 	}
 }
+
+func (d *Database) UpdateTopic(topic string, newTopic string) error {
+	d.db.Model(&model.VideoTable{}).Where("topic = ?", topic).Update("topic", newTopic)
+	return nil
+}
+
+func (d *Database) DeleteTopic(topic string) error {
+	avids := make([]uint, 0)
+	if err := d.db.Model(&model.VideoTable{}).Where("topic = ?", topic).Pluck("avid", &avids).Error; err != nil {
+		return err
+	}
+	if len(avids) > 0 {
+		if err := d.db.Where("video_avid IN ?", avids).Delete(&model.CommentTable{}).Error; err != nil {
+			return err
+		}
+	}
+	if err := d.db.Delete(&model.VideoTable{}, "topic = ?", topic).Error; err != nil {
+		return err
+	}
+	return nil
+}
