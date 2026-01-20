@@ -7,7 +7,10 @@
                 :title="topic.name" 
                 tag="button" hoverable 
                 :style="{ 'cursor': 'pointer' }" 
-                @click="() => $router.push({ name: 'topic', query: { topicName: topic.name } })"
+                @click="() => {
+                    jumpToTopicDetail(topic.name);
+                    $router.push({ name: 'topic' })
+                }"
                 @contextmenu.prevent="(e:MouseEvent) => popTopicContext({ x: e.clientX, y: e.clientY, topicName: topic.name })"
                 >
                     包含{{ topic.count }}个视频
@@ -25,15 +28,14 @@
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
 import { NGrid, NGi, NCard } from 'naive-ui';
-import mitt from 'mitt';
-
 
 import { fetchTopics } from '../api';
 import type { TopicsList } from '../types';
 import TopicContext from '../components/Topic/TopicContext.vue'
-
+import { useRouterStore } from '../store/modules/router';
 
 const $router = useRouter()
+const routerStore = useRouterStore()
 const topics = ref<TopicsList[]>([]);
 const fetchTopicsList = async () => {
     try {
@@ -56,9 +58,10 @@ const popTopicContext = ({ x, y, topicName }: { x: number, y: number, topicName:
     topicNameRef.value = topicName
     showTopicContext.value = true
 }
-const $mitt = mitt()
+
+const jumpToTopicDetail = (name:string) => routerStore.setCurrentTopicName(name)
+
 onMounted(() => {
-    $mitt.on('topicUpdated', fetchTopicsList)
     fetchTopicsList();
 });
 </script>

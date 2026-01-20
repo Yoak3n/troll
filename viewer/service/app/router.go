@@ -5,8 +5,8 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/Yoak3n/troll/scanner/controller"
 	"github.com/Yoak3n/troll/viewer/consts"
-	"github.com/Yoak3n/troll/viewer/service/controller"
 	"github.com/Yoak3n/troll/viewer/service/handler"
 	"github.com/Yoak3n/troll/viewer/service/ws"
 	"github.com/gofiber/contrib/websocket"
@@ -16,8 +16,6 @@ import (
 
 	handler2 "github.com/Yoak3n/troll/scanner/package/handler"
 )
-
-
 
 func initServices() {
 	controller.GlobalDatabase(consts.TrollPath, "troll")
@@ -72,6 +70,7 @@ func setupRoutes(app *fiber.App) {
 			conn.WriteMessage(400, []byte("need a id"))
 		}
 	}))
+	v1.Post("/task/video/refresh", handler.HandlerVideoRefreshPost)
 	setupTopicsRoutes(v1)
 	setupVideosRoutes(v1)
 	setupUserRoutes(v1)

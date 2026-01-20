@@ -23,6 +23,12 @@ type UserTable struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
+type SignedUserTable struct {
+	gorm.Model
+	Uid        uint
+	LastViewed time.Time
+}
+
 type VideoTable struct {
 	Avid        uint   `json:"avid" gorm:"primaryKey"`
 	Bvid        string `json:"bvid"`

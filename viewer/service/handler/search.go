@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/Yoak3n/troll/viewer/service/controller"
+	"github.com/Yoak3n/troll/scanner/controller"
 	"github.com/gofiber/fiber/v2"
 )
 

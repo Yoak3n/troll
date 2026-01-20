@@ -37,6 +37,18 @@ onMounted(async () => {
     stats.value = await fetchDashboardStats()
 });
 
+const skipGuidance = () => {
+    window.$dialog?.info({
+        title: '提示',
+        content: '确定要跳过使用引导吗？',
+        positiveText: '确定',
+        negativeText: '取消',
+        onPositiveClick: () => {
+            appStore.setGuidanceFinished(true)
+        }
+    })
+}
+
 </script>
 
 
@@ -54,7 +66,7 @@ onMounted(async () => {
         </n-breadcrumb>
         <n-divider />
         <div class="home-dashboard" v-if="$route.name == 'home'">
-            <n-card title="使用引导" closable v-if="!appStore.getGuidanceFinished()" @close="appStore.setGuidanceFinished(true)" embedded>
+            <n-card title="使用引导" closable v-if="!appStore.getGuidanceFinished()" @close="skipGuidance" embedded>
                 <Guidance :next-step="appStore.incrementGuidanceIndex" :active-step="appStore.getGuidanceIndex()" />
             </n-card>
             <n-card title="统计信息">

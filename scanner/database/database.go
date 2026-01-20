@@ -33,7 +33,7 @@ func InitDatabase(path string, name string) *gorm.DB {
 		panic(err)
 	}
 
-	err = db.AutoMigrate(&model.VideoTable{}, &model.UserTable{}, &model.ConfigurationTable{}, &model.CommentTable{})
+	err = db.AutoMigrate(&model.VideoTable{}, &model.UserTable{}, &model.ConfigurationTable{}, &model.CommentTable{}, &model.SignedUserTable{})
 	if err != nil {
 		panic(err)
 	}

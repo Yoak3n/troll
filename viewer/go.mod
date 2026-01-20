@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/Yoak3n/gulu v0.0.6
 	github.com/Yoak3n/troll/scanner v0.0.0-20251105071623-c7001807a215
-	github.com/glebarez/sqlite v1.11.0
+	github.com/glebarez/sqlite v1.11.0 // indirect
 	github.com/gofiber/contrib/websocket v1.3.4
 	github.com/gofiber/fiber/v2 v2.52.9
 	gorm.io/gorm v1.31.1

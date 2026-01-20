@@ -45,7 +45,7 @@ func configCommand() *cli.Command {
 }
 
 func setCookie(cookie string) error {
-	return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
+	return controller.GlobalDatabase().UpdateConfigurationRecord(&model.ConfigurationTable{
 		Type: "cookie",
 		Data: cookie,
 	})
@@ -54,13 +54,13 @@ func setCookie(cookie string) error {
 func setProxy(proxy string) error {
 	currentProxy, err := controller.GlobalDatabase().QueryConfigurationProxy()
 	if err != nil {
-		return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
+		return controller.GlobalDatabase().UpdateConfigurationRecord(&model.ConfigurationTable{
 			Type: "proxy",
 			Data: proxy,
 		})
 	}
 	if currentProxy != nil {
-		return controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
+		return controller.GlobalDatabase().UpdateConfigurationRecord(&model.ConfigurationTable{
 			Model: gorm.Model{
 				ID: currentProxy.ID,
 			},

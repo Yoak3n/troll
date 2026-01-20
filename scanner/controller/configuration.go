@@ -24,6 +24,6 @@ func (d *Database) QueryConfiguration() ([]model.ConfigurationTable, error) {
 	return confs, err
 }
 
-func (d *Database) UpdateConfiguration(c *model.ConfigurationTable) error {
+func (d *Database) UpdateConfigurationRecord(c *model.ConfigurationTable) error {
 	return d.db.Save(c).Error
 }

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Yoak3n/troll/viewer/service/app"
 	"github.com/Yoak3n/troll/scanner/package/util"
+	"github.com/Yoak3n/troll/viewer/service/app"
 	"github.com/urfave/cli/v3"
 )
 

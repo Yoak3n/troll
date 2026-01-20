@@ -34,7 +34,7 @@ func Init(dbPath string, dbName string) *Configuration {
 		if conf.Type == "cookie" {
 			if !CheckCookie(conf.Data) {
 				logger.Logger.Fatalf("cookie %s is invalid", conf.Data)
-				controller.GlobalDatabase().UpdateConfiguration(&model.ConfigurationTable{
+				controller.GlobalDatabase().UpdateConfigurationRecord(&model.ConfigurationTable{
 					Model: gorm.Model{
 						ID: conf.ID,
 					},

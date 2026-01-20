@@ -6,6 +6,7 @@ import (
 	"github.com/Yoak3n/troll/scanner/model"
 	"github.com/Yoak3n/troll/scanner/package/handler"
 	"github.com/Yoak3n/troll/viewer/service/ws"
+	"github.com/gofiber/fiber/v2"
 )
 
 func (s *HandlerState) HandleTask() {
@@ -177,4 +178,20 @@ func (s *HandlerState) handleVideoTask(bvid string, topic string) {
 	handlerState.tasks[process.Id] = process
 	handlerState.mu.Unlock()
 	go s.taskProcess(bvid)
+}
+
+func HandlerVideoRefreshPost(c *fiber.Ctx) error {
+	var taskData ws.TaskData
+	err := c.BodyParser(&taskData)
+	if err != nil {
+		return c.Status(400).SendString("need a task data")
+	}
+	if taskData.Type != "video" {
+		return c.Status(400).SendString("type must be video")
+	}
+	if taskData.Data == nil {
+		return c.Status(400).SendString("need a video id")
+	}
+	ws.Hub.Tasks <- taskData
+	return c.Status(200).SendString("ok")
 }

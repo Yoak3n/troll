@@ -122,11 +122,9 @@ func (h *WebSocketHub) healthCheck(client *Client) {
 		last := client.last
 		now := time.Now().Unix()
 		if (now - last) >= 180 {
-			log.Println("check failed")
 			h.unregister <- client.id
 			return
 		}
-		log.Println("check successfully")
 		pingMessage := WebsocketMessage{
 			Action: PingMessage,
 			Data:   "ping",
@@ -142,7 +140,6 @@ func (h *WebSocketHub) listen(id string, conn *websocket.Conn) {
 	}()
 	for {
 		t, msg, err := conn.Conn.ReadMessage()
-		log.Println("T", t, id, string(msg))
 		if err != nil || t == -1 {
 			break
 		}
