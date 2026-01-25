@@ -200,16 +200,16 @@ const refreshVideoData = async () => {
         type: "video",
         data: selectedVideos.map(avid => av2bv(avid)),
         topic: topicName.value,
-        page: 1
+        page: 0
     })
-    if (ret.status === 200) {
-        window.$message?.success('刷新成功');
+    if (ret.status == 200) {
+        window.$message?.success('添加任务成功');
         // 刷新视频列表
-        loadVideos();
+        // loadVideos();
         // 清空选中状态
         checkedVideos.value = {};
     } else {
-        window.$message?.error('刷新失败');
+        window.$message?.error('添加任务失败');
     }
 }
 

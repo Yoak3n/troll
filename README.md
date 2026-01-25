@@ -53,6 +53,12 @@ title即存放一批视频评论信息数据的目录，在cache目录下，在�
 获取bilibili的cookie，使用【troll config --cookie】填写好cookie字段（必填），由于cookie字符串过长，请使用双引号包裹
 如果要使用代理可以填好系统代理的地址
 
+### View
+最低学习成本的用法，打开webui直接进行设置和获取数据
+```bash
+troll view
+```
+
 ### Fetch
 使用`fetch`子命令先获取巨魔活动的范围环境信息——单独视频或一个话题下多个视频的评论区
 ```bash
@@ -130,11 +136,4 @@ GLOBAL OPTIONS:
    --cache string, -C string  cache path(Deprecated) (default: "%UserConfigDir%/troll/data/cache")
    --title string, -T string  specify title as directory
    --version, -V              print only the version (default: false)
-```
-
-
-### View
-打开webui直接查看数据
-```bash
-troll view
 ```

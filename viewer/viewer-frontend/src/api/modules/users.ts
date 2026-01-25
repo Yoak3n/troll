@@ -1,14 +1,32 @@
-import type { CommentViewWithVideo,SearchFilterRequest } from '../../types';
+import type { CommentViewWithVideo,SearchFilterRequest, User } from '../../types';
 import request from '../../utils/request'
 
 const API = {
     USER_COMMENTS: "/users/", // + uid + '/comments'
-    USER_COMMENTS_FILTER: "/users/filter/coments" //?uid ?name ?rangeType ? rangeData 
+    USER_COMMENTS_FILTER: "/users/filter/coments", //?uid ?name ?rangeType ? rangeData 
+    USER_SIGNED: "/users/signed",
+    USER_SIGN: "/users/sign"
 } as const;
 
 export const fetchCommentsByUserAndTopic = (uid:number,topic?:string) => {
     let uri = `${API.USER_COMMENTS}${uid}` + '/comments'
     return request.get<any,CommentViewWithVideo[]>(topic? uri+`?topicName=${topic}`: uri)
+}
+
+export const fetchSignedUsers = () => {
+    return request.get<any,User[]>(API.USER_SIGNED)
+}
+
+export const signUser = (uids:number[]) => {
+    return request.post<any,any>(API.USER_SIGN,{uids})
+}
+
+export const unsignUser = (uids:number[]) => {
+    return request.delete<any,any>(API.USER_SIGN,{
+        data: {
+            uids
+        }
+    })
 }
 
 

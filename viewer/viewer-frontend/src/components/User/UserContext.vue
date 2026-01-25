@@ -10,6 +10,7 @@ import { NDropdown } from 'naive-ui';
 import type { DropdownOption } from 'naive-ui';
 import type { DropdownOptionProps } from '../../types/option'
 import { h, type VNodeChild } from 'vue';
+import { signUser } from '../../api';
 
 interface Props {
     context: DropdownOptionProps,
@@ -23,6 +24,7 @@ const { context, uid } = defineProps<Props>();
 const options: Array<DropdownOption> = [
     { label: '所有评论', key: 'viewProfile', type: 'normal' },
     { label: '去TA的个人空间', key: 'userSpace', type: 'normal' },
+    { label: '标记该用户', key: 'sign', type: 'normal' },
     { label: '取消', key: 'cancel', type: 'warning' },
 ];
 
@@ -34,6 +36,9 @@ const handleSelect = async (key: string) => {
             break
         case 'userSpace':
             window.open(`https://space.bilibili.com/${uid}`, '_blank');
+            break
+        case 'sign':
+            await addSignUser()
             break
         case 'cancel':
             break
@@ -52,5 +57,9 @@ const renderLabel = (option: DropdownOption) => {
     return option.label as VNodeChild
 }
 
+const addSignUser = async () => {
+    await signUser([uid])
+    window.$message?.success('标记成功，请在用户查询页面查看')
+} 
 
 </script>

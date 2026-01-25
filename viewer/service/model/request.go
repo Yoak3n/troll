@@ -12,3 +12,7 @@ type UpdateTopicRequest struct {
 type VideoDeleteRequest struct {
 	AVIDList []uint `json:"avidList"`
 }
+
+type UserSignRequest struct {
+	Uids []uint `json:"uids"`
+}

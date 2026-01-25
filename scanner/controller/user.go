@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Yoak3n/troll/scanner/model"
 )
@@ -54,6 +55,9 @@ func (d *Database) GetCommentsWithVideoFromUserInTopic(uid uint, topic string) [
 		query += " AND v.topic = ?"
 		d.db.Raw(query, uid, topic).Scan(&cwd)
 	}
+
+	d.db.Model(&model.SignedUserTable{}).Where("uid = ?", uid).Update("last_viewed", time.Now())
+
 	return commentsWithVideoQueryToCommentGroupByVideo(cwd)
 }
 
@@ -127,4 +131,26 @@ func commentsWithVideoQueryToCommentGroupByVideo(cwd []CommentsWithVideoQuery) [
 		commentsGroup = append(commentsGroup, v)
 	}
 	return commentsGroup
+}
+
+func (d *Database) CreateSignedRecord(record model.SignedUserTable) error {
+	return d.db.Create(&record).Error
+}
+
+func (d *Database) GetSignedUserRecord() ([]model.UserTable, error) {
+	ids := make([]uint, 0)
+	err := d.db.Model(&model.SignedUserTable{}).Pluck("uid", &ids).Error
+	if err != nil {
+		return nil, err
+	}
+	userRecords := make([]model.UserTable, 0)
+	err = d.db.Where("uid IN ?", ids).Find(&userRecords).Error
+	if err != nil {
+		return nil, err
+	}
+	return userRecords, nil
+}
+
+func (d *Database) DeleteSignedUserRecord(uid uint) error {
+	return d.db.Where("uid = ?", uid).Delete(&model.SignedUserTable{}).Error
 }

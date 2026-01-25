@@ -21,14 +21,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute} from 'vue-router';
 import { NCollapse, NCollapseItem, NCard } from 'naive-ui';
 import CommentContext from '../components/Comment/CommentContext.vue'
 import { fetchCommentsBySearchFilter } from '../api';
 import type { CommentViewWithVideo, SearchFilterRequest } from '../types';
 
 const $route = useRoute()
-const $router = useRouter()
 const comments = ref<CommentViewWithVideo[]>([])
 
 const xRef = ref(-1)
@@ -49,7 +48,6 @@ onMounted(async () => {
     const name = $route.query.name as string
     const rangeType = $route.query.rangeType as string
     const rangeData = $route.query.rangeData as string
-    const topicName = $route.query.topicName as string
     const data: SearchFilterRequest = {
         name,
         uid,
@@ -58,15 +56,6 @@ onMounted(async () => {
     }
     const res = await fetchCommentsBySearchFilter(data)
     comments.value = res
-
-    $router.afterEach((to)=>{
-        console.log('user redirect to',to.name);
-        
-        if (to.name == 'topic' && topicName){
-            to.query.topicName = topicName
-        }
-
-    })
 })
 
 

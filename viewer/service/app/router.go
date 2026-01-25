@@ -99,6 +99,9 @@ func setupUserRoutes(group fiber.Router) {
 	users := group.Group("/users").Name("users.")
 	users.Get("/:uid/comments", handler.HandlerUserCommentGet).Name("user.comments")
 	users.Get("/filter/coments", handler.HandlerUserCommentsFilter).Name("comments")
+	users.Get("/signed", handler.HandlerUserSignedGet).Name("signed")
+	users.Post("/sign", handler.HandlerUserSignPost).Name("sign")
+	users.Delete("/signed", handler.HandlerUserSignDelete).Name("signed")
 }
 
 func setupSearchRoutes(group fiber.Router) {
