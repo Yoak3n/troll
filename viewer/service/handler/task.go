@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Yoak3n/troll/scanner/model"
 	"github.com/Yoak3n/troll/scanner/package/handler"
@@ -156,6 +157,14 @@ func (s *HandlerState) setTaskCompleted(id string) {
 	}
 	handlerState.mu.Unlock()
 	s.Log(fmt.Sprintf("Task Completed %v", id))
+
+	time.AfterFunc(3*time.Minute, func() {
+		handlerState.mu.Lock()
+		defer handlerState.mu.Unlock()
+		if p, ok := handlerState.tasks[id]; ok && p.Completed {
+			delete(handlerState.tasks, id)
+		}
+	})
 }
 
 func (s *HandlerState) handleVideoTask(bvid string, topic string) {

@@ -171,7 +171,7 @@ const uploadTaskData = (task: TaskForm) => {
     display: flex;
     flex-direction: column;
     margin: 1rem;
-
+    height: calc(100vh - 2rem);
     .console-header {
         display: flex;
         flex-direction: row;

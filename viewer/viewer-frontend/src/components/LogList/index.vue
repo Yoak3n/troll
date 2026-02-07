@@ -1,6 +1,6 @@
 <template>
     <div class="log-container">
-          <n-virtual-list :item-size="42" :items="logsList" item-resizable ref="virtualListInst">
+          <n-virtual-list class="log-list" :item-size="42" :items="logsList" item-resizable ref="virtualListInst">
             <template #default="{ item }">
                 <div class="log-item">
                     [{{ item.time }}] {{ item.content }}
@@ -14,21 +14,26 @@
 import { NVirtualList } from 'naive-ui';
 import type { VirtualListInst } from 'naive-ui'
 import type { LogItem } from '../../types';
-import { nextTick, ref, watch } from 'vue';
+import { nextTick, ref, watch, toRefs } from 'vue';
 
-const {logsList} = defineProps<{
+const props = defineProps<{
     logsList: LogItem[]
 }>()
+const { logsList } = toRefs(props)
+
 const virtualListInst = ref<VirtualListInst>()
 const handleScrollToPosition = ()=> {
   virtualListInst.value?.scrollTo({ position: 'bottom' })
 }
-watch(()=>logsList,()=> nextTick(()=>handleScrollToPosition()))
+watch(logsList, ()=> nextTick(()=>handleScrollToPosition()), { deep: true })
 </script>
 
 <style scoped lang="less">
 .log-container{
-    background-color: beige;
     height: 100%;
+    .log-list {
+        height: 100%;
+        max-height: 100%;
+    }
 }
 </style>
